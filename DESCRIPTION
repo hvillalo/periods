@@ -1,0 +1,14 @@
+Package: periods
+Type: Package
+Title: Extracción y modelación de periodicidades en series de tiempo
+Version: 0.0.1
+Date: 2024-04-08
+Encoding: UTF-8
+Author: Héctor Villalobos [aut, cre]
+Maintainer: Héctor Villalobos <hvillalo@ipn.mx>
+Description: MOdelación. 
+Depends: R (>= 4.0.0)
+License: GPL-3
+URL: https://github.com/hvillalo/echogram
+BugReports: https://github.com/hvillalo/echogram/issues
+RoxygenNote: 7.3.1
