@@ -21,6 +21,16 @@ limits (and possibly a certain depth).
 \details{
 This function can ...
 }
+\examples{
+data(sim)
+# descenso cíclico
+sim.cd <- cyclicDescent(x = sim)
+# periodos significativos
+p <- sim.cd$harmonics$Period[1:4]
+sim.fit <- lm.harmonics(x = sim, periods = p, trend=FALSE)
+makeHarmonics(sim.fit)
+
+}
 \seealso{
 \code{\link{cyclicDescent}}.
 }

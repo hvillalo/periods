@@ -7,23 +7,34 @@
 lm.harmonics(x, t = NULL, periods, trend = FALSE)
 }
 \arguments{
-\item{x.}{}
+\item{x}{Vector containing the time series to be fitted by multiple linear regression.}
 
-\item{t.}{}
+\item{t}{Vector of time. Must be monotonically increasing of the same length of x.}
 
-\item{periods.}{}
+\item{periods}{Periods of the harmonics (normally found by \code{cyclicDescent}.}
 
-\item{trend.}{}
+\item{trend}{Logical. If \code{TRUE}, the linear trend is included in the model.}
 }
 \value{
-objeto de clase 'lm'
+object of class 'lm'
 }
 \description{
-Read a specific variable from several global CMEMS files, for choosen area 
-limits (and possibly a certain depth).
+Fit a periodic regression model to a time series by multiple linear regression.
 }
 \details{
 This function can ...
+}
+\examples{
+# load simulated data
+data(sim)
+# find periodicities
+sim.cd <- cyclicDescent(x = sim)
+# significant or desired periods
+p <- sim.cd$harmonics$Period[1:4]
+multiple linear regression fit
+sim.fit <- lm.harmonics(x = sim, periods = p, trend=FALSE)
+summary(sim.fit)
+
 }
 \seealso{
 \code{\link{cyclicDescent}}.

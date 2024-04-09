@@ -1,6 +1,6 @@
 Package: periods
 Type: Package
-Title: Extracting and modeling periodicities in time series
+Title: Extracting and modeling periodicities in regular time series
 Version: 0.0.1
 Date: 2024-04-08
 Encoding: UTF-8
@@ -9,6 +9,6 @@ Maintainer: Héctor Villalobos <hvillalo@ipn.mx>
 Description: This R package allows to obtain the period, amplitude and lag phase of the main harmonic components in a time series, based on periodic regression with cyclic descent. 
 Depends: R (>= 4.0.0)
 License: GPL-3
-URL: https://github.com/hvillalo/echogram
-BugReports: https://github.com/hvillalo/echogram/issues
+URL: https://github.com/hvillalo/periods
+BugReports: https://github.com/hvillalo/periods/issues
 RoxygenNote: 7.3.1

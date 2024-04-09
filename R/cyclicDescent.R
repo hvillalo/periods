@@ -1,33 +1,30 @@
-#' Descenso cíclico
+#' Cyclic Descent
 #' 
-#' Read a specific variable from several global CMEMS files, for choosen area 
-#' limits (and possibly a certain depth).
+#' This function implements the cyclic descent with periodoc regression to find periodicities in a regular time series.
 #' 
-#' @param x.
+#' @param x Vector containing the time series to be analyzed.
 #'
-#' @param t. 
+#' @param t Vector of time. Must be monotonically increasing of the same length of x. 
 #'  
-#' @param trend.
+#' @param trend Logical. If \code{TRUE}, the linear tendency is calculated and subtracted from the data.
 #' 
-#' @param ip.
+#' @param ip Initial period to test. Must be in the same units as \code{t}.
 #'
-#' @param lp.
+#' @param lp Final period to test.
 #'
-#' @param step.
+#' @param step Period step. Is the increment in time for each tested period according to the time unit (derived from t above), the default value is 1 assuming that two successive data values are separated by one unit of time.
 #'
-#' @param hn.
-#' 
-#' @param neig
+#' @param hn Number of harmonics to estimate. Determined by the MRRSS criteria or an integer number supplied by the user.
+#'  
+#' @param neig By default, a period identified (op) in a periodic regression will not be considered in a subsequent search unless neig = −1. Other positive integers will cause the function to also exclude neighboring periods: op − neig and op + neig in subsequent searches, note that the neighbors are directly related to the step argument.
 #'
-#' @param neig.
+#' @param exclude The periods given here will be excluded in the periods search..
 #'
-#' @param exclude.
+#' @param alpha The confidence level for the statistical test in the cyclic descent or probability error if the corresponding model fit is rejected. Defaults to alpha = 0.05.
 #'
-#' @param alpha.
+#' @param rrss Reciprocal of residual sum of squares (string). Logical, defaults to FALSE. If TRUE, the periods tested and their corresponding RRSS in every step of the cyclic descent will be provided.
 #'
-#' @param rrss.
-#'
-#' @param plots.
+#' @param plots A string indicating the desired plots. By default plots = “last”, in which case just the plot with the final fitted model is generated. With plots = “all” the RRSS versus tested periods and the cumulated harmonics fit in every step of the cyclic descent will be plotted in addition to the final fit. When plots = “none” no plot is produced. Can be abbreviated.
 #' 
 #'
 #' @details This function can ...  
@@ -40,12 +37,12 @@
 #' @seealso \code{\link{lm.harmonics}}.
 #'
 #' @examples
+#' # load simulated data
 #' data(sim)
-#' # descenso cíclico
+#' # find periodicites
 #' sim.cd <- cyclicDescent(x = sim)
 #' sim.cd
 #' 
-#' }
 cyclicDescent <- 
   function(x, t=NULL, trend=FALSE, ip=NULL, lp=NULL, step=NULL, hn=NULL,
            neig=0, exclude=NULL, alpha=0.05, rrss=FALSE, 

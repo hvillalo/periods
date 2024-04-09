@@ -24,7 +24,6 @@
 #' sim.fit <- lm.harmonics(x = sim, periods = p, trend=FALSE)
 #' makeHarmonics(sim.fit)
 #' 
-#' }
 makeHarmonics <- 
   function(fit.lm, plot = TRUE) 
   {

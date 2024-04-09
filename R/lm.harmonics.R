@@ -1,35 +1,35 @@
 #' multiple regression
 #' 
-#' Read a specific variable from several global CMEMS files, for choosen area 
-#' limits (and possibly a certain depth).
+#' Fit a periodic regression model to a time series by multiple linear regression.
 #' 
-#' @param x.
+#' @param x Vector containing the time series to be fitted by multiple linear regression. 
 #'
-#' @param t. 
+#' @param t Vector of time. Must be monotonically increasing of the same length of x. 
 #'  
-#' @param periods.
+#' @param periods Periods of the harmonics (normally found by \code{cyclicDescent}.
 #' 
-#' @param trend.
+#' @param trend Logical. If \code{TRUE}, the linear trend is included in the model. 
 #'
 #'
 #' @details This function can ...  
 #'
-#' @return objeto de clase 'lm'
+#' @return object of class 'lm'
 #'
 #' @author Héctor Villalobos.   
 #'
 #' @seealso \code{\link{cyclicDescent}}.
 #'
 #' @examples
+#' # load simulated data
 #' data(sim)
-#' # descenso cíclico
+#' # find periodicities
 #' sim.cd <- cyclicDescent(x = sim)
-#' # periodos significativos
+#' # significant or desired periods
 #' p <- sim.cd$harmonics$Period[1:4]
+#' multiple linear regression fit
 #' sim.fit <- lm.harmonics(x = sim, periods = p, trend=FALSE)
 #' summary(sim.fit)
 #' 
-#' }
 lm.harmonics <- 
   function(x, t=NULL, periods, trend=FALSE)
   { 

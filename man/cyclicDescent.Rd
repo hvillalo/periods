@@ -2,7 +2,7 @@
 % Please edit documentation in R/cyclicDescent.R
 \name{cyclicDescent}
 \alias{cyclicDescent}
-\title{Descenso cíclico}
+\title{Cyclic Descent}
 \usage{
 cyclicDescent(
   x,
@@ -20,42 +20,47 @@ cyclicDescent(
 )
 }
 \arguments{
-\item{neig}{}
+\item{x}{Vector containing the time series to be analyzed.}
 
-\item{x.}{}
+\item{t}{Vector of time. Must be monotonically increasing of the same length of x.}
 
-\item{t.}{}
+\item{trend}{Logical. If \code{TRUE}, the linear tendency is calculated and subtracted from the data.}
 
-\item{trend.}{}
+\item{ip}{Initial period to test. Must be in the same units as \code{t}.}
 
-\item{ip.}{}
+\item{lp}{Final period to test.}
 
-\item{lp.}{}
+\item{step}{Period step. Is the increment in time for each tested period according to the time unit (derived from t above), the default value is 1 assuming that two successive data values are separated by one unit of time.}
 
-\item{step.}{}
+\item{hn}{Number of harmonics to estimate. Determined by the MRRSS criteria or an integer number supplied by the user.}
 
-\item{hn.}{}
+\item{neig}{By default, a period identified (op) in a periodic regression will not be considered in a subsequent search unless neig = −1. Other positive integers will cause the function to also exclude neighboring periods: op − neig and op + neig in subsequent searches, note that the neighbors are directly related to the step argument.}
 
-\item{neig.}{}
+\item{exclude}{The periods given here will be excluded in the periods search..}
 
-\item{exclude.}{}
+\item{alpha}{The confidence level for the statistical test in the cyclic descent or probability error if the corresponding model fit is rejected. Defaults to alpha = 0.05.}
 
-\item{alpha.}{}
+\item{rrss}{Reciprocal of residual sum of squares (string). Logical, defaults to FALSE. If TRUE, the periods tested and their corresponding RRSS in every step of the cyclic descent will be provided.}
 
-\item{rrss.}{}
-
-\item{plots.}{}
+\item{plots}{A string indicating the desired plots. By default plots = “last”, in which case just the plot with the final fitted model is generated. With plots = “all” the RRSS versus tested periods and the cumulated harmonics fit in every step of the cyclic descent will be plotted in addition to the final fit. When plots = “none” no plot is produced. Can be abbreviated.}
 }
 \value{
 Una lista con dos elementos, 'harmonics' (data frame) con seis columnas 
 (Periodo, amplitud, fase, lag, RSS, y R-squared)
 }
 \description{
-Read a specific variable from several global CMEMS files, for choosen area 
-limits (and possibly a certain depth).
+This function implements the cyclic descent with periodoc regression to find periodicities in a regular time series.
 }
 \details{
 This function can ...
+}
+\examples{
+# load simulated data
+data(sim)
+# find periodicites
+sim.cd <- cyclicDescent(x = sim)
+sim.cd
+
 }
 \seealso{
 \code{\link{lm.harmonics}}.
