@@ -1,5 +1,7 @@
 # periods
 
-Extracción y modelación de periodicidades en series de tiempo
+Extracting and modeling periodicities in time series
 
-Modelación de series de tiempo
+From
+
+Periodicity is common in natural processes, however, extraction tools are typically difficult and cumbersome to use. Here we report a computational method developed in MATLAB through a function called Periods with the aim to find the main harmonic components of time series data. This function is designed to obtain the period, amplitude and lag phase of the main harmonic components in a time series (Periods and lag phase components can be related to climate, social or economic events). It is based on methods of periodic regression with cyclic descent and includes statistical significance testing. The proposed method is very easy to use. Furthermore, it does not require full understanding of time series theory, nor require many inputs from the user. However, it is sufficiently flexible to undertake more complex tasks such as forecasting. Additionally, based on previous knowledge, specific periods can be included or excluded easily. The output results are organized into two groups. One contains the parameters of the adjusted model and their F statistics. The other consists of the harmonic parameters that best fit the original series according to their importance and the summarized statistics of the comparisons between successive models in the cyclic descent process. Periods is tested with both, simulated and actual sunspot and Multivariate ENSO Index data to show its performance and accuracy.
