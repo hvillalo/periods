@@ -1,11 +1,11 @@
-periods: Extracción y modelación de periodicidades en series de tiempo
-regulares
+Extracción y modelación de periodicidades en series de tiempo regulares
+con el paquete periods
 ================
 
 ## Instalación
 
 El paquete **periods** es la implementación en R del método presentado
-en González-Rodríguez et al. (2015). Se puede instalar desde github con
+en (González-Rodríguez et al. 2015). Se puede instalar desde github con
 ayuda de **devtools**, el cual a su vez se instala de la manera habitual
 en caso de no estar ya disponible.
 
@@ -162,10 +162,25 @@ sub.t <- substitute(paste(R^2, " = ", R2, " ; ", "p-value: ", pval),
                     list( R2 = R2, pval = pval ))
 
 par(mfrow = c(1, 1))
-plot(sim, type = "b", col = "grey50", main = main.t)
+plot(sim, type = "n", main = main.t)
 grid()
+lines(sim, type = "b", col = "grey30")
 lines(fitted(sim.fit), col = "blue")
 mtext(sub.t, side = 3)
 ```
 
 ![](README_files/figure-commonmark/unnamed-chunk-8-1.png)
+
+<div id="refs" class="references csl-bib-body hanging-indent">
+
+<div id="ref-gonzález-rodríguez2015" class="csl-entry">
+
+González-Rodríguez, Eduardo, Héctor Villalobos, Víctor Manuel
+Gómez-Muñoz, and Alejandro Ramos-Rodríguez. 2015. “Computational Method
+for Extracting and Modeling Periodicities in Time Series.” *Open Journal
+of Statistics* 05 (06): 604–17.
+<https://doi.org/10.4236/ojs.2015.56062>.
+
+</div>
+
+</div>

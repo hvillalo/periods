@@ -1,0 +1,100 @@
+---
+title: "Extracción y modelación de periodicidades en series de tiempo regulares con el paquete periods"
+format: 
+  gfm:
+    toc: false
+editor: visual
+bibliography: references.bib
+---
+
+## Instalación
+
+El paquete **periods** es la implementación en R del método presentado en @gonzález-rodríguez2015. Se puede instalar desde github con ayuda de **devtools**, el cual a su vez se instala de la manera habitual en caso de no estar ya disponible.
+
+```{r, eval=FALSE}
+install.packages("devtools") # si no está ya instalado
+
+library(devtools)
+install_github("hvillalo/periods")
+```
+
+## Ejemplo de uso
+
+### Serie simulada
+
+Se generó una serie de tiempo (n = 220) con cuatro componentes harmónicos definidos por los parámetros siguientes: periodos = 25, 10, 16 y 73; amplitudes 40, 20, 10 y 5; fases = 2, 5, 1 y 0; media = 0; sin tendencia lineal y 10 % de ruido aleatorio. Esta serie de tiempo se incluye con el paquete, por lo que se puede cargar en memoria con la función `data()`.
+
+```{r}
+library(periods)
+
+# Serie simulada
+data(sim)
+
+# gráfica 
+plot(sim, type = "l")
+```
+
+**Busqueda de periodicidades con descenso cíclico**
+
+La función `cyclicDescent()` se encarga de manera automática de esto. Basta indicar el vector de la serie de tiempo.
+
+```{r}
+sim.cd <- cyclicDescent(x=sim)
+```
+
+El resultado es una lista con dos elementos, los harmónicos y las pruebas de significancia
+
+```{r}
+# componentes harmónicos
+sim.cd$harmonics
+
+# Estadísticos
+sim.cd$Stats
+```
+
+Como puede verse en la comparación del valor de R^2^ entre los modelos 4 y 5, p \> 0.05, por lo que el último componente harmónico (periodo = 5; amplitud = 2.17 ; fase = 1.99) ya no es significativo.
+
+### Ajuste del modelo final por regresión lineal múltiple
+
+Una vez encontrados lo periodos significativos, se procede al ajuste del modelo final, donde se hace la estimación de los parámetros a~1~ y b~1~ de cada harmónico al mismo tiempo.
+
+```{r}
+op <- sim.cd$harmonics$Period[1:4] # solo los primeros 4 periodos 
+sim.fit <- lm.harmonics(x = sim, periods = op, trend = FALSE)
+sim.fit
+```
+
+`sim.fit` es un objeto de clase `lm`, que preferimos mantener para aprovechar toda la maquinaria desarrollada en R para los modelos lineales. Por ejemplo, podemos revisar la tabla de regresión resultante
+
+```{r}
+summary(sim.fit)
+```
+
+A partir de a~1~ y b~1~ podemos calcular las amplitudes y fases correspondientes a través de la función `makeHarmonics()`
+
+```{r}
+# generar harmónicos
+harmonics <- makeHarmonics(sim.fit)
+harmonics
+```
+
+La figura del modelo final se puede obtener así:
+
+```{r}
+# Plot final
+R2 <- as.numeric(formatC(summary(sim.fit)$r.squared, digits=3))
+stat <- summary(sim.fit)$fstatistic
+pval <- pf(stat[1], stat[2], stat[3], lower.tail = FALSE)
+pval <- format.pval(pval, digits = max(3, getOption("digits") - 3))
+
+main.t <- paste("Periods =", paste(formatC(op, digits=3), collapse=", "))
+sub.t <- substitute(paste(R^2, " = ", R2, " ; ", "p-value: ", pval), 
+                    list( R2 = R2, pval = pval ))
+
+par(mfrow = c(1, 1))
+plot(sim, type = "n", main = main.t)
+grid()
+lines(sim, type = "b", col = "grey30")
+lines(fitted(sim.fit), col = "blue")
+mtext(sub.t, side = 3)
+```
