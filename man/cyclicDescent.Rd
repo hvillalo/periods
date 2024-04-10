@@ -16,7 +16,7 @@ cyclicDescent(
   exclude = NULL,
   alpha = 0.05,
   rrss = FALSE,
-  plots = c("all", "last", "none")
+  plots = FALSE
 )
 }
 \arguments{
@@ -42,7 +42,7 @@ cyclicDescent(
 
 \item{rrss}{Reciprocal of residual sum of squares (string). Logical, defaults to FALSE. If TRUE, the periods tested and their corresponding RRSS in every step of the cyclic descent will be provided.}
 
-\item{plots}{A string indicating the desired plots. By default plots = “last”, in which case just the plot with the final fitted model is generated. With plots = “all” the RRSS versus tested periods and the cumulated harmonics fit in every step of the cyclic descent will be plotted in addition to the final fit. When plots = “none” no plot is produced. Can be abbreviated.}
+\item{plots}{Logical, when TRUE, the RRSS versus the tested periods and the cumulated harmonics fit in every step of the cyclic descent will be plotted.}
 }
 \value{
 Una lista con dos elementos, 'harmonics' (data frame) con seis columnas 

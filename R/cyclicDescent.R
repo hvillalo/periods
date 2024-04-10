@@ -24,7 +24,7 @@
 #'
 #' @param rrss Reciprocal of residual sum of squares (string). Logical, defaults to FALSE. If TRUE, the periods tested and their corresponding RRSS in every step of the cyclic descent will be provided.
 #'
-#' @param plots A string indicating the desired plots. By default plots = “last”, in which case just the plot with the final fitted model is generated. With plots = “all” the RRSS versus tested periods and the cumulated harmonics fit in every step of the cyclic descent will be plotted in addition to the final fit. When plots = “none” no plot is produced. Can be abbreviated.
+#' @param plots Logical, when TRUE, the RRSS versus the tested periods and the cumulated harmonics fit in every step of the cyclic descent will be plotted.
 #' 
 #'
 #' @details This function can ...  
@@ -46,7 +46,7 @@
 cyclicDescent <- 
   function(x, t=NULL, trend=FALSE, ip=NULL, lp=NULL, step=NULL, hn=NULL,
            neig=0, exclude=NULL, alpha=0.05, rrss=FALSE, 
-           plots=c("all", "last", "none"))
+           plots=FALSE)
   {
     n <- length(x)                          # length of data series
     if (missing(t)){ 
@@ -68,8 +68,6 @@ cyclicDescent <-
 	}
     if (missing(step))  
       step <- t.unit                        # step between test periods
-    if (missing(plots)) 
-      plots <-  "last"
     x.mean <- mean(x)                   
     xd <- x - x.mean                        # center data
     datdf <- data.frame(t=t, x=xd)
@@ -105,7 +103,7 @@ cyclicDescent <-
       }
       plev <- format.pval(plev, digits=max(3, getOption("digits") - 3))
       
-      par(mfrow = c(2, 1))
+      par(mfrow = c(2, 1), mar = c(4, 4, 2, 2))
       plot(resids[[pnb]], type="l", main=paste("op =", p1))
       plot(t, xd, type="o", col="grey30", main=substitute(paste(R^2, " = ", 
                     Rsq, " ; ", "p-value: ", plev), list(Rsq=Rsq, plev=plev)))
@@ -161,7 +159,7 @@ cyclicDescent <-
     
     resids[[1]] <- rrss.pr[, 3:4]
     
-    if (plots %in% c("a", "all")) plot.cd(1)
+    if (plots == TRUE) plot.cd(1)
     
     # Second and subsequent models... if any ***********************************
     # Initializing counters
@@ -231,7 +229,7 @@ cyclicDescent <-
       sta[rnn - 1, 'F'] <- Fc
       sta[rnn - 1, 'p.value'] <- p.level  
       
-      if (plots  %in% c("a", "all")) plot.cd(rnn)
+      if (plots == TRUE) plot.cd(rnn)
       
       # Controling the number of loop' tours
       if (missing(hn)) {   # When harmonic number (hn) is not specified
