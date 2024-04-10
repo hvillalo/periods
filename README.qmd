@@ -9,7 +9,7 @@ bibliography: references.bib
 
 ## Instalación
 
-El paquete **periods** es la implementación en R del método presentado en \@GonzalezRodriguez2015. Se puede instalar desde github con ayuda de **devtools**, el cual a su vez se instala de la manera habitual en caso de no estar ya disponible.
+El paquete **periods** es la implementación en R del método presentado en @GonzalezRodriguez2015. Se puede instalar desde github con ayuda de **devtools**, el cual a su vez se instala de la manera habitual en caso de no estar ya disponible.
 
 ```{r, eval=FALSE}
 install.packages("devtools") # si aun no está instalado
@@ -107,6 +107,6 @@ lines(fitted(sim.fit), col = "blue")
 mtext(sub.t, side = 3)
 ```
 
-Mayores detalles del método se pueden revisar en la publicación de \@GonzalezRodriguez2015.
+Mayores detalles del método se pueden revisar en la publicación de @GonzalezRodriguez2015.
 
 **Referencias**

@@ -5,9 +5,9 @@ El paquete ‘periods’
 ## Instalación
 
 El paquete **periods** es la implementación en R del método presentado
-en @GonzalezRodriguez2015. Se puede instalar desde github con ayuda de
-**devtools**, el cual a su vez se instala de la manera habitual en caso
-de no estar ya disponible.
+en González-Rodríguez et al. (2015). Se puede instalar desde github con
+ayuda de **devtools**, el cual a su vez se instala de la manera habitual
+en caso de no estar ya disponible.
 
 ``` r
 install.packages("devtools") # si aun no está instalado
@@ -219,6 +219,20 @@ mtext(sub.t, side = 3)
 ![](README_files/figure-commonmark/unnamed-chunk-9-1.png)
 
 Mayores detalles del método se pueden revisar en la publicación de
-@GonzalezRodriguez2015.
+González-Rodríguez et al. (2015).
 
 **Referencias**
+
+<div id="refs" class="references csl-bib-body hanging-indent">
+
+<div id="ref-GonzalezRodriguez2015" class="csl-entry">
+
+González-Rodríguez, Eduardo, Héctor Villalobos, Víctor Manuel
+Gómez-Muñoz, and Alejandro Ramos-Rodríguez. 2015. “Computational Method
+for Extracting and Modeling Periodicities in Time Series.” *Open Journal
+of Statistics* 05 (06): 604–17.
+<https://doi.org/10.4236/ojs.2015.56062>.
+
+</div>
+
+</div>
