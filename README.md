@@ -20,12 +20,12 @@ install_github("hvillalo/periods") #instalación desde github
 
 ### Serie simulada
 
-El paquete incluye una serie de tiempo simulada (n = 220) media = 0, sin
-tendencia lineal y cuatro componentes armónicos definidos por los
-parámetros: periodos = 25, 10, 16, 73; amplitudes = 40, 20, 10, 5; fases
-= 2, 5, 1, 0;. Adicionalmente se añadió un 10 % de ruido aleatorio. Una
-vez cargado el paquete, la serie se puede cargar en memoria con la
-función `data()`.
+El paquete incluye una serie de tiempo simulada (n = 220) con media = 0,
+sin tendencia lineal y cuatro componentes armónicos definidos por los
+parámetros siguientes: periodos = 25, 10, 16, 73; amplitudes = 40, 20,
+10, 5; y fases = 2, 5, 1, 0. Adicionalmente la serie contiene un 10 % de
+ruido aleatorio. Una vez que el paquete ha sido activado, la serie se
+puede cargar en memoria con la función `data()`.
 
 ``` r
 library(periods)
@@ -43,7 +43,7 @@ plot(sim, type = "l")
 
 El primer paso del análisis consiste en buscar los periodos dominantes
 en la serie de tiempo. De esto se encarga la función `cyclicDescent()`,
-a la que la basta con que se especifique el vector de la serie de tiempo
+a la que le basta con que se especifique el vector de la serie de tiempo
 a procesar.
 
 ``` r
@@ -83,11 +83,15 @@ que este último se descarta.
 
 La función `cyclicDescent()` tiene muchos argumentos más, cuyo uso se
 puede consultar en la ayuda del paquete (`?cyclicDescent`) o en la
-publicación mencionada (ver carpeta `doc`). Como ejemplo, se puede
-invocar solicitando los gráficos de cada modelo sucesivo encontrado:
+publicación mencionada (ver carpeta `doc`), aunque es importante
+mencionar que **existen ligeras diferencias entre las implementaciones
+en Matlab y en R**.
+
+Un ejemplo de un argumento interesante es `plots = TRUE`, el cual
+produce los gráficos de cada modelo sucesivo encontrado:
 
 ``` r
-cyclicDescent(sim, plots = "all")
+cyclicDescent(sim, plots = TRUE)
 ```
 
 ![](README_files/figure-commonmark/unnamed-chunk-5-1.png)
