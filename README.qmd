@@ -1,5 +1,5 @@
 ---
-title: "Extracción y modelación de periodicidades en series de tiempo regulares con el paquete periods"
+title: "Extracción y modelación de periodicidades en series de tiempo regulares. El paquete 'periods'"
 format: 
   gfm:
     toc: false
@@ -9,20 +9,20 @@ bibliography: references.bib
 
 ## Instalación
 
-El paquete **periods** es la implementación en R del método presentado en @gonzález-rodríguez2015. Se puede instalar desde github con ayuda de **devtools**, el cual a su vez se instala de la manera habitual en caso de no estar ya disponible.
+El paquete **periods** es la implementación en R del método presentado en \@GonzalezRodriguez2015. Se puede instalar desde github con ayuda de **devtools**, el cual a su vez se instala de la manera habitual en caso de no estar ya disponible.
 
 ```{r, eval=FALSE}
-install.packages("devtools") # si no está ya instalado
+install.packages("devtools") # si aun no está instalado
 
 library(devtools)
-install_github("hvillalo/periods")
+install_github("hvillalo/periods") #instalación desde github
 ```
 
 ## Ejemplo de uso
 
 ### Serie simulada
 
-Se generó una serie de tiempo (n = 220) con cuatro componentes harmónicos definidos por los parámetros siguientes: periodos = 25, 10, 16 y 73; amplitudes 40, 20, 10 y 5; fases = 2, 5, 1 y 0; media = 0; sin tendencia lineal y 10 % de ruido aleatorio. Esta serie de tiempo se incluye con el paquete, por lo que se puede cargar en memoria con la función `data()`.
+El paquete incluye una serie de tiempo simulada (n = 220) media = 0, sin tendencia lineal y cuatro componentes armónicos definidos por los parámetros: periodos = 25, 10, 16, 73; amplitudes = 40, 20, 10, 5; fases = 2, 5, 1, 0;. Adicionalmente se añadió un 10 % de ruido aleatorio. Una vez cargado el paquete, la serie se puede cargar en memoria con la función `data()`.
 
 ```{r}
 library(periods)
@@ -34,51 +34,59 @@ data(sim)
 plot(sim, type = "l")
 ```
 
-**Busqueda de periodicidades con descenso cíclico**
+**Búsqueda de periodicidades con descenso cíclico**
 
-La función `cyclicDescent()` se encarga de manera automática de esto. Basta indicar el vector de la serie de tiempo.
+El primer paso del análisis consiste en buscar los periodos dominantes en la serie de tiempo. De esto se encarga la función `cyclicDescent()`, a la que la basta con que se especifique el vector de la serie de tiempo a procesar.
 
 ```{r}
 sim.cd <- cyclicDescent(x=sim)
 ```
 
-El resultado es una lista con dos elementos, los harmónicos y las pruebas de significancia
+El resultado es una lista con los componentes armónicos encontrados y las pruebas de significancia estadística del aumento de R^2^ entre modelos sucesivos.
 
 ```{r}
-# componentes harmónicos
+# componentes armónicos
 sim.cd$harmonics
 
-# Estadísticos
+# estadísticos
 sim.cd$Stats
 ```
 
-Como puede verse en la comparación del valor de R^2^ entre los modelos 4 y 5, p \> 0.05, por lo que el último componente harmónico (periodo = 5; amplitud = 2.17 ; fase = 1.99) ya no es significativo.
+Como puede verse, el aumento en R^2^ al pasar del Modelo 4 (con cuatro componentes armónicos) al Modelo 5, no es significativo, por lo que este último se descarta.
+
+La función `cyclicDescent()` tiene muchos argumentos más, cuyo uso se puede consultar en la ayuda del paquete (`?cyclicDescent`) o en la publicación mencionada (ver carpeta `doc`). Como ejemplo, se puede invocar solicitando los gráficos de cada modelo sucesivo encontrado:
+
+```{r}
+cyclicDescent(sim, plots = "all")
+```
 
 ### Ajuste del modelo final por regresión lineal múltiple
 
-Una vez encontrados lo periodos significativos, se procede al ajuste del modelo final, donde se hace la estimación de los parámetros a~1~ y b~1~ de cada harmónico al mismo tiempo.
+Una vez encontrados lo periodos significativos, se procede al ajuste del modelo final, donde se hace la estimación de los parámetros a y b de cada armónico, y en su caso de la tendencia lineal, al mismo tiempo. Este modelo corresponde a la llamada regresión periódica y se ajusta por regresión lineal múltiple con la función `lm()`, en este caso modificada para ajustar el modelo:
+
+$$ X_e = \alpha + \beta t + \sum_{i=1}^m \bigg(a_i \cdot cos(2\pi p_i^{-1}t) + b_i \cdot sin(2\pi p_i^{-1}t) \bigg) $$
 
 ```{r}
-op <- sim.cd$harmonics$Period[1:4] # solo los primeros 4 periodos 
+op <- sim.cd$harmonics$Period[1:4] # solo interesan los primeros 4 periodos 
 sim.fit <- lm.harmonics(x = sim, periods = op, trend = FALSE)
 sim.fit
 ```
 
-`sim.fit` es un objeto de clase `lm`, que preferimos mantener para aprovechar toda la maquinaria desarrollada en R para los modelos lineales. Por ejemplo, podemos revisar la tabla de regresión resultante
+`sim.fit` es un objeto de clase `lm`, que preferimos mantener para aprovechar toda la maquinaria desarrollada en R para modelos lineales. Por ejemplo, podemos revisar la tabla de regresión resultante
 
 ```{r}
 summary(sim.fit)
 ```
 
-A partir de a~1~ y b~1~ podemos calcular las amplitudes y fases correspondientes a través de la función `makeHarmonics()`
+A partir de a~i~ y b~i~ podemos calcular las amplitudes y fases correspondientes a través de la función `makeHarmonics()`.
 
 ```{r}
-# generar harmónicos
+# generar armónicos
 harmonics <- makeHarmonics(sim.fit)
 harmonics
 ```
 
-La figura del modelo final se puede obtener así:
+La figura del modelo final se puede mediante el siguiente código:
 
 ```{r}
 # Plot final
@@ -98,3 +106,7 @@ lines(sim, type = "b", col = "grey30")
 lines(fitted(sim.fit), col = "blue")
 mtext(sub.t, side = 3)
 ```
+
+Mayores detalles del método se pueden revisar en la publicación de \@GonzalezRodriguez2015.
+
+**Referencias**

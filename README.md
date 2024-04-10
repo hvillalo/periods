@@ -1,56 +1,61 @@
-Extracción y modelación de periodicidades en series de tiempo regulares
-con el paquete periods
+Extracción y modelación de periodicidades en series de tiempo regulares.
+El paquete ‘periods’
 ================
 
 ## Instalación
 
 El paquete **periods** es la implementación en R del método presentado
-en (González-Rodríguez et al. 2015). Se puede instalar desde github con
-ayuda de **devtools**, el cual a su vez se instala de la manera habitual
-en caso de no estar ya disponible.
+en @GonzalezRodriguez2015. Se puede instalar desde github con ayuda de
+**devtools**, el cual a su vez se instala de la manera habitual en caso
+de no estar ya disponible.
 
 ``` r
-install.packages("devtools") # si no está ya instalado
+install.packages("devtools") # si aun no está instalado
 
 library(devtools)
-install_github("hvillalo/periods")
+install_github("hvillalo/periods") #instalación desde github
 ```
 
 ## Ejemplo de uso
 
 ### Serie simulada
 
-Se generó una serie de tiempo (n = 220) con cuatro componentes
-harmónicos definidos por los parámetros siguientes: periodos = 25, 10,
-16 y 73; amplitudes 40, 20, 10 y 5; fases = 2, 5, 1 y 0; media = 0; sin
-tendencia lineal y 10 % de ruido aleatorio.
+El paquete incluye una serie de tiempo simulada (n = 220) media = 0, sin
+tendencia lineal y cuatro componentes armónicos definidos por los
+parámetros: periodos = 25, 10, 16, 73; amplitudes = 40, 20, 10, 5; fases
+= 2, 5, 1, 0;. Adicionalmente se añadió un 10 % de ruido aleatorio. Una
+vez cargado el paquete, la serie se puede cargar en memoria con la
+función `data()`.
 
 ``` r
 library(periods)
 
-## Serie simulada ----
+# Serie simulada
 data(sim)
 
-# Plot
+# gráfica 
 plot(sim, type = "l")
 ```
 
 ![](README_files/figure-commonmark/unnamed-chunk-2-1.png)
 
-**Busqueda de periodicidades con descenso cíclico**
+**Búsqueda de periodicidades con descenso cíclico**
 
-La función `cyclicDescent()` se encarga de manera automática de esto.
-Basta indicar el vector de la serie de tiempo.
+El primer paso del análisis consiste en buscar los periodos dominantes
+en la serie de tiempo. De esto se encarga la función `cyclicDescent()`,
+a la que la basta con que se especifique el vector de la serie de tiempo
+a procesar.
 
 ``` r
 sim.cd <- cyclicDescent(x=sim)
 ```
 
-El resultado es una lista con dos elementos, los harmónicos y las
-pruebas de significancia
+El resultado es una lista con los componentes armónicos encontrados y
+las pruebas de significancia estadística del aumento de R<sup>2</sup>
+entre modelos sucesivos.
 
 ``` r
-# componentes harmónicos
+# componentes armónicos
 sim.cd$harmonics
 ```
 
@@ -62,7 +67,7 @@ sim.cd$harmonics
     Model 5 :      5  2.170549  1.9933169  1.586231 18897.26 0.9255145
 
 ``` r
-# Estadísticos
+# estadísticos
 sim.cd$Stats
 ```
 
@@ -72,18 +77,60 @@ sim.cd$Stats
     Models 3 & 4 :   9.287941   2 211 0.0001362
     Models 4 & 5 :   2.865822   2 209 0.0591766
 
-Como puede verse en la comparación del valor de R<sup>2</sup> entre los
-modelos 4 y 5, p \> 0.05, por lo que el último componente harmónico
-(periodo = 5; amplitud = 2.17 ; fase = 1.99) ya no es significativo.
+Como puede verse, el aumento en R<sup>2</sup> al pasar del Modelo 4 (con
+cuatro componentes armónicos) al Modelo 5, no es significativo, por lo
+que este último se descarta.
+
+La función `cyclicDescent()` tiene muchos argumentos más, cuyo uso se
+puede consultar en la ayuda del paquete (`?cyclicDescent`) o en la
+publicación mencionada (ver carpeta `doc`). Como ejemplo, se puede
+invocar solicitando los gráficos de cada modelo sucesivo encontrado:
+
+``` r
+cyclicDescent(sim, plots = "all")
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-5-1.png)
+
+![](README_files/figure-commonmark/unnamed-chunk-5-2.png)
+
+![](README_files/figure-commonmark/unnamed-chunk-5-3.png)
+
+![](README_files/figure-commonmark/unnamed-chunk-5-4.png)
+
+![](README_files/figure-commonmark/unnamed-chunk-5-5.png)
+
+    $harmonics
+              Period Amplitude      Phase       Lag      RSS      R.sq
+    Model 1 :     25 40.290188  2.0200464  8.037509 76155.61 0.6998248
+    Model 2 :     10 20.049342 -1.2151491 -1.933970 31938.24 0.8741121
+    Model 3 :     16  9.856530  1.0029183  2.553910 21124.79 0.9167345
+    Model 4 :     75  3.985973 -0.1135317 -1.355185 19415.50 0.9234718
+    Model 5 :      5  2.170549  1.9933169  1.586231 18897.26 0.9255145
+
+    $Stats
+                            F dfn dfd   p.value
+    Models 1 & 2 : 148.829972   2 215 < 2.2e-16
+    Models 2 & 3 :  54.515691   2 213 < 2.2e-16
+    Models 3 & 4 :   9.287941   2 211 0.0001362
+    Models 4 & 5 :   2.865822   2 209 0.0591766
+
+    attr(,"class")
+    [1] "periods"
 
 ### Ajuste del modelo final por regresión lineal múltiple
 
 Una vez encontrados lo periodos significativos, se procede al ajuste del
-modelo final, donde se hace la estimación de los parámetros
-a<sub>1</sub> y b<sub>1</sub> de cada harmónico al mismo tiempo.
+modelo final, donde se hace la estimación de los parámetros a y b de
+cada armónico, y en su caso de la tendencia lineal, al mismo tiempo.
+Este modelo corresponde a la llamada regresión periódica y se ajusta por
+regresión lineal múltiple con la función `lm()`, en este caso modificada
+para ajustar el modelo:
+
+$$ X_e = \alpha + \beta t + \sum_{i=1}^m \bigg(a_i \cdot cos(2\pi p_i^{-1}t) + b_i \cdot sin(2\pi p_i^{-1}t) \bigg) $$
 
 ``` r
-op <- sim.cd$harmonics$Period[1:4] # solo los primeros 4 periodos 
+op <- sim.cd$harmonics$Period[1:4] # solo interesan los primeros 4 periodos 
 sim.fit <- lm.harmonics(x = sim, periods = op, trend = FALSE)
 sim.fit
 ```
@@ -99,8 +146,8 @@ sim.fit
                 5.4185              8.2432              3.9721             -0.4508  
 
 `sim.fit` es un objeto de clase `lm`, que preferimos mantener para
-aprovechar toda la maquinaria desarrollada en R para los modelos
-lineales. Por ejemplo, podemos revisar la tabla de regresión resultante
+aprovechar toda la maquinaria desarrollada en R para modelos lineales.
+Por ejemplo, podemos revisar la tabla de regresión resultante
 
 ``` r
 summary(sim.fit)
@@ -131,12 +178,12 @@ summary(sim.fit)
     Multiple R-squared:  0.9236,    Adjusted R-squared:  0.9207 
     F-statistic: 320.4 on 8 and 212 DF,  p-value: < 2.2e-16
 
-A partir de a<sub>1</sub> y b<sub>1</sub> podemos calcular las
+A partir de a<sub>i</sub> y b<sub>i</sub> podemos calcular las
 amplitudes y fases correspondientes a través de la función
-`makeHarmonics()`
+`makeHarmonics()`.
 
 ``` r
-# generar harmónicos
+# generar armónicos
 harmonics <- makeHarmonics(sim.fit)
 harmonics
 ```
@@ -148,7 +195,7 @@ harmonics
     3     16  9.864595  0.9892816  2.519185
     4     75  3.997617 -0.1129975 -1.348808
 
-La figura del modelo final se puede obtener así:
+La figura del modelo final se puede mediante el siguiente código:
 
 ``` r
 # Plot final
@@ -169,18 +216,9 @@ lines(fitted(sim.fit), col = "blue")
 mtext(sub.t, side = 3)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-8-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-9-1.png)
 
-<div id="refs" class="references csl-bib-body hanging-indent">
+Mayores detalles del método se pueden revisar en la publicación de
+@GonzalezRodriguez2015.
 
-<div id="ref-gonzález-rodríguez2015" class="csl-entry">
-
-González-Rodríguez, Eduardo, Héctor Villalobos, Víctor Manuel
-Gómez-Muñoz, and Alejandro Ramos-Rodríguez. 2015. “Computational Method
-for Extracting and Modeling Periodicities in Time Series.” *Open Journal
-of Statistics* 05 (06): 604–17.
-<https://doi.org/10.4236/ojs.2015.56062>.
-
-</div>
-
-</div>
+**Referencias**
