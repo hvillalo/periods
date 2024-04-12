@@ -20,33 +20,32 @@ cyclicDescent(
 )
 }
 \arguments{
-\item{x}{Vector containing the time series to be analyzed.}
+\item{x}{Vector of values to be analyzed.}
 
-\item{t}{Vector of time. Must be monotonically increasing of the same length of x.}
+\item{t}{Vector of time (optional). If specified, it has to have the same length as \code{x} and must be monotonically increasing.}
 
 \item{trend}{Logical. If \code{TRUE}, the linear tendency is calculated and subtracted from the data.}
 
-\item{ip}{Initial period to test. Must be in the same units as \code{t}.}
+\item{ip}{Initial period to test.}
 
 \item{lp}{Final period to test.}
 
-\item{step}{Period step. Is the increment in time for each tested period according to the time unit (derived from t above), the default value is 1 assuming that two successive data values are separated by one unit of time.}
+\item{step}{Is the increment between periods. Defaults to 1, assuming that two successive data values are separated by one unit of time.}
 
-\item{hn}{Number of harmonics to estimate. Determined by the MRRSS criteria or an integer number supplied by the user.}
+\item{hn}{Number of harmonics to estimate. If not specified, the function will stop when the increase in R-squared is not significative or when a maximum of 30 harmonics is reached. This behaviour is overrid when a value is provided.}
 
-\item{neig}{By default, a period identified (op) in a periodic regression will not be considered in a subsequent search unless neig = −1. Other positive integers will cause the function to also exclude neighboring periods: op − neig and op + neig in subsequent searches, note that the neighbors are directly related to the step argument.}
+\item{neig}{By default, once an optimal period (op) is identified, it is excluded from subsequent searches, unless neig = −1. Positive integers will also exclude neighboring periods (op − neig and op + neig).}
 
-\item{exclude}{The periods given here will be excluded in the periods search..}
+\item{exclude}{The periods given here will be excluded in the periods search.}
 
-\item{alpha}{The confidence level for the statistical test in the cyclic descent or probability error if the corresponding model fit is rejected. Defaults to alpha = 0.05.}
+\item{alpha}{The confidence level for the statistical test in the cyclic descent. Defaults to 0.05.}
 
-\item{rrss}{Reciprocal of residual sum of squares (string). Logical, defaults to FALSE. If TRUE, the periods tested and their corresponding RRSS in every step of the cyclic descent will be provided.}
+\item{rrss}{Logical. When \code{TRUE}, the reciprocal of the residual sum of squares in every step of the cyclic descent will be returned.}
 
 \item{plots}{Logical, when TRUE, the RRSS versus the tested periods and the cumulated harmonics fit in every step of the cyclic descent will be plotted.}
 }
 \value{
-Una lista con dos elementos, 'harmonics' (data frame) con seis columnas 
-(Periodo, amplitud, fase, lag, RSS, y R-squared)
+A list with two elements, (1) 'harmonics' a six-column data frame giving the periods, amplitudes, phases, lags, RSS and R-squared. Note that after the first model, the following will include the new period referred to and those already found. (2) 'Stats' this data frame provides the F statistics, with the corresponding degrees of freedom and associated p-values for every model comparisons.
 }
 \description{
 This function implements the cyclic descent with periodoc regression to find periodicities in a regular time series.
@@ -61,6 +60,9 @@ data(sim)
 sim.cd <- cyclicDescent(x = sim)
 sim.cd
 
+}
+\references{
+González-Rodríguez E, Villalobos H, Gómez-Muñoz VM and Ramos-Rodríguez A. 2015. Computational Method for Extracting and Modeling Periodicities in Time Series. Open Journal of Statistics 05(06): 604–17. \url{https://doi.org/10.4236/ojs.2015.56062}.
 }
 \seealso{
 \code{\link{lm.harmonics}}.
