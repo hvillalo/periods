@@ -181,7 +181,7 @@ perReg$model
     x ~ 0 + cos(2 * pi/25 * t) + sin(2 * pi/25 * t) + cos(2 * pi/10 * 
         t) + sin(2 * pi/10 * t) + cos(2 * pi/16 * t) + sin(2 * pi/16 * 
         t) + cos(2 * pi/75 * t) + sin(2 * pi/75 * t)
-    <environment: 0x000001a868ca6bd8>
+    <environment: 0x0000014d0eed7bf8>
 
 ``` r
 # ... y la tabla de datos
