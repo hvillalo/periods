@@ -1,5 +1,5 @@
 ---
-title: "Extracción y modelación de periodicidades en series de tiempo regulares. El paquete 'periods'"
+title: "Extracción y modelación de periodicidades en series de tiempo regulares. El paquete 'periods'."
 format: 
   gfm:
     toc: false
@@ -12,10 +12,10 @@ bibliography: references.bib
 El paquete **periods** es la implementación en R del método presentado en @GonzalezRodriguez2015. Se puede instalar desde github con ayuda de **devtools**, el cual a su vez se instala de la manera habitual en caso de no estar ya disponible.
 
 ```{r, eval=FALSE}
-install.packages("devtools") # si aun no está instalado
+install.packages("devtools") # si no está instalado
 
 library(devtools)
-install_github("hvillalo/periods") #instalación desde github
+install_github("hvillalo/periods") #instalación de 'periods' desde github
 ```
 
 ## Ejemplo de uso
@@ -39,7 +39,7 @@ plot(sim, type = "l")
 El primer paso del análisis consiste en buscar los periodos dominantes en la serie de tiempo. De esto se encarga la función `cyclicDescent()`, a la que le basta con que se especifique el vector de la serie de tiempo a procesar.
 
 ```{r}
-sim.cd <- cyclicDescent(x=sim)
+sim.cd <- cyclicDescent(x = sim)
 ```
 
 El resultado es una lista con los componentes armónicos encontrados y las pruebas de significancia estadística del aumento de R^2^ entre modelos sucesivos.
