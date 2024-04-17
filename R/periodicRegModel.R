@@ -1,6 +1,6 @@
-#' Setup Periodic Regression Model
+#' Periodic Regression Model
 #' 
-#' Setup the periodic regression model according to given periods.
+#' Build the periodic regression model according to given periods.
 #' 
 #' @param x Vector containing the time series to be fitted. 
 #'
@@ -29,11 +29,11 @@
 #' # significant or desired periods
 #' p <- sim.cd$harmonics$Period[1:4]
 #' model to fit with lm
-#' perReg <- set_periodicRegression(x = sim, periods = p, center.x = FALSE, trend = FALSE)
+#' perReg <- periodicRegModel(x = sim, periods = p, center.x = FALSE, trend = FALSE)
 #' perReg
 #' # model fit
 #' summary(lm(perReg$model, data = perReg$data))
-set_periodicRegression <- 
+periodicRegModel <- 
   function(x, t = NULL, periods, center.x = TRUE, trend = FALSE)
   { 
     n <- length(x)

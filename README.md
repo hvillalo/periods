@@ -1,5 +1,5 @@
 Extracción y modelación de periodicidades en series de tiempo regulares.
-El paquete ‘periods’
+El paquete ‘periods’.
 ================
 
 ## Instalación
@@ -10,10 +10,10 @@ ayuda de **devtools**, el cual a su vez se instala de la manera habitual
 en caso de no estar ya disponible.
 
 ``` r
-install.packages("devtools") # si aun no está instalado
+install.packages("devtools") # si no está instalado
 
 library(devtools)
-install_github("hvillalo/periods") #instalación desde github
+install_github("hvillalo/periods") #instalación de 'periods' desde github
 ```
 
 ## Ejemplo de uso
@@ -47,7 +47,7 @@ a la que le basta con que se especifique el vector de la serie de tiempo
 a procesar.
 
 ``` r
-sim.cd <- cyclicDescent(x=sim)
+sim.cd <- cyclicDescent(x = sim)
 ```
 
 El resultado es una lista con los componentes armónicos encontrados y
@@ -182,6 +182,68 @@ summary(sim.fit)
     Multiple R-squared:  0.9236,    Adjusted R-squared:  0.9207 
     F-statistic: 320.4 on 8 and 212 DF,  p-value: < 2.2e-16
 
+En lugar de la función `lm.harmonics` se recomienda usar la siguiente
+sintaxis que es más transparente sobre lo que se está haciendo. Con
+`periodicRegModel()` se genera el modelo que se va a pasar a `lm()` para
+el ajuste final, preparandose también la tabla de datos.
+
+``` r
+perReg <- periodicRegModel(x = sim, periods = op, center.x = FALSE)
+# este es modelo que será ajustado
+perReg$model
+```
+
+    x ~ 0 + cos(2 * pi/25 * t) + sin(2 * pi/25 * t) + cos(2 * pi/10 * 
+        t) + sin(2 * pi/10 * t) + cos(2 * pi/16 * t) + sin(2 * pi/16 * 
+        t) + cos(2 * pi/75 * t) + sin(2 * pi/75 * t)
+    <environment: 0x0000019260fb5748>
+
+``` r
+# y la tabla con la serie de tiempo ya preparada (p. ej. centrada a media cero) y el vector de tiempo
+head(perReg$data)
+```
+
+      t          x
+    1 1 -6.8318049
+    2 2  2.9818565
+    3 3 -0.9092164
+    4 4 35.0020263
+    5 5 37.3203249
+    6 6 40.2108500
+
+Una vez preparado el modelo, el ajuste que se hace automáticamente con
+`lm.harmonics()`, quedaría de la siguiente manera
+
+``` r
+fit <- lm(perReg$model, data = perReg$data)
+summary(fit)
+```
+
+
+    Call:
+    lm(formula = perReg$model, data = perReg$data)
+
+    Residuals:
+         Min       1Q   Median       3Q      Max 
+    -20.9137  -6.0685   0.1568   6.8189  27.7316 
+
+    Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)    
+    cos(2 * pi/25 * t) -17.2271     0.9174 -18.778  < 2e-16 ***
+    sin(2 * pi/25 * t)  36.5678     0.9084  40.257  < 2e-16 ***
+    cos(2 * pi/10 * t)   7.0859     0.9123   7.767 3.40e-13 ***
+    sin(2 * pi/10 * t) -19.1219     0.9127 -20.950  < 2e-16 ***
+    cos(2 * pi/16 * t)   5.3803     0.9151   5.880 1.58e-08 ***
+    sin(2 * pi/16 * t)   8.2687     0.9107   9.079  < 2e-16 ***
+    cos(2 * pi/75 * t)   3.9101     0.9231   4.236 3.39e-05 ***
+    sin(2 * pi/75 * t)  -0.4403     0.9028  -0.488    0.626    
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 9.566 on 212 degrees of freedom
+    Multiple R-squared:  0.9236,    Adjusted R-squared:  0.9208 
+    F-statistic: 320.6 on 8 and 212 DF,  p-value: < 2.2e-16
+
 A partir de a<sub>i</sub> y b<sub>i</sub> podemos calcular las
 amplitudes y fases correspondientes a través de la función
 `makeHarmonics()`.
@@ -220,7 +282,7 @@ lines(fitted(sim.fit), col = "blue")
 mtext(sub.t, side = 3)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-9-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
 
 Mayores detalles del método se pueden revisar en la publicación de
 González-Rodríguez et al. (2015).

@@ -80,6 +80,23 @@ sim.fit
 summary(sim.fit)
 ```
 
+En lugar de la función `lm.harmonics` se recomienda usar la siguiente sintaxis que es más transparente sobre lo que se está haciendo. Con `periodicRegModel()` se genera el modelo que se va a pasar a `lm()` para el ajuste final, preparandose también la tabla de datos.
+
+```{r}
+perReg <- periodicRegModel(x = sim, periods = op, center.x = FALSE)
+# este es modelo que será ajustado
+perReg$model
+# y la tabla con la serie de tiempo ya preparada (p. ej. centrada a media cero) y el vector de tiempo
+head(perReg$data)
+```
+
+Una vez preparado el modelo, el ajuste que se hace automáticamente con `lm.harmonics()`, quedaría de la siguiente manera
+
+```{r}
+fit <- lm(perReg$model, data = perReg$data)
+summary(fit)
+```
+
 A partir de a~i~ y b~i~ podemos calcular las amplitudes y fases correspondientes a través de la función `makeHarmonics()`.
 
 ```{r}
