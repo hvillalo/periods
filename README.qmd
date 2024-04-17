@@ -128,10 +128,11 @@ data(sunspots)
 
 #### Descenso cíclico
 
-En este caso, es conveniente centrar la serie a media cero para facilitar el ajuste. Para ello se utiliza el argumento `center.x = TRUE`. Aunque este es su valor por defecto, lo incluimos para no olvidarlo en los pasos siguientes.
+En este caso, es conveniente centrar la serie a media cero para facilitar el ajuste. Para ello se utiliza el argumento `center.x = TRUE`. Aunque este es su valor por defecto, lo incluimos para no olvidarlo en los pasos siguientes. En el caso de la tendencia lineal, por defecto es `trend = FALSE`.
 
 ```{r}
-dc <- cyclicDescent(x = sunspots$number, t = sunspots$year, center.x = TRUE)
+dc <- cyclicDescent(x = sunspots$number, t = sunspots$year, 
+                    center.x = TRUE, trend = TRUE)
 dc
 ```
 
@@ -142,8 +143,9 @@ Al construir el modelo final, es importante hacerlo tal cual se hizo la búsqued
 ```{r}
 p <- dc$harmonics$Period[1:10]
 rp <- periodicRegModel(x = sunspots$number, t = sunspots$year, periods = p, 
-                       center.x = TRUE)
+                       center.x = TRUE, trend = TRUE)
 fit <- lm(rp$model, data = rp$data)
+harmonics(fit)
 ```
 
 #### Figura final
