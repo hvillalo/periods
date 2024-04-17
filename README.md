@@ -5,9 +5,10 @@ El paquete ‘periods’.
 ## Instalación
 
 El paquete **periods** es la implementación en R del método presentado
-en González-Rodríguez et al. (2015). Se puede instalar desde github con
-ayuda de **devtools**, el cual a su vez se instala de la manera habitual
-en caso de no estar ya disponible.
+en González-Rodríguez et al. (2015) (ver
+<http://dx.doi.org/10.4236/ojs.2015.56062>). Se puede instalar desde
+github con ayuda de **devtools**, el cual a su vez se instala de la
+manera habitual en caso de no estar ya disponible.
 
 ``` r
 install.packages("devtools") # si no está instalado
@@ -20,12 +21,14 @@ install_github("hvillalo/periods") #instalación de 'periods' desde github
 
 ### Serie simulada
 
-El paquete incluye una serie de tiempo simulada (n = 220) con media = 0,
-sin tendencia lineal y cuatro componentes armónicos definidos por los
-parámetros siguientes: periodos = 25, 10, 16, 73; amplitudes = 40, 20,
-10, 5; y fases = 2, 5, 1, 0. Adicionalmente la serie contiene un 10 % de
-ruido aleatorio. Una vez que el paquete ha sido activado, la serie se
-puede cargar en memoria con la función `data()`.
+El paquete incluye una serie de tiempo simulada (n = 220) con las
+siguientes características: media = 0, sin tendencia lineal y cuatro
+componentes armónicos definidos por los parámetros: periodos = 25, 10,
+16, 73; amplitudes = 40, 20, 10, 5; y fases = 2, 5, 1, 0.
+Adicionalmente, la serie contiene un 10 % de ruido aleatorio.
+
+Una vez que el paquete ha sido activado, la serie simulada se puede
+cargar en memoria con la función `data()`.
 
 ``` r
 library(periods)
@@ -82,13 +85,16 @@ cuatro componentes armónicos) al Modelo 5, no es significativo, por lo
 que este último se descarta.
 
 La función `cyclicDescent()` tiene muchos argumentos más, cuyo uso se
-puede consultar en la ayuda del paquete (`?cyclicDescent`) o en la
-publicación mencionada (ver carpeta `doc`), aunque es importante
-mencionar que **existen ligeras diferencias entre las implementaciones
-en Matlab y en R**.
+puede consultar en la publicación mencionada o preferentemente en la
+ayuda del paquete (`?cyclicDescent`), ya que **existen algunas
+diferencias entre las implementaciones en Matlab y en R**.
 
 Un ejemplo de un argumento interesante es `plots = TRUE`, el cual
-produce los gráficos de cada modelo sucesivo encontrado:
+produce los gráficos de cada modelo. Cabe mencionar que aparte del
+primer modelo que solo tiene un componente armónico, los subsiguientes
+corresponden a la suma de los componentes sucesivos. En el caso
+anterior, por ejemplo, el modelo 3 incluye los periodos 25, 10, 16 y sus
+correspondientes amplitudes y fases.
 
 ``` r
 cyclicDescent(sim, plots = TRUE)
@@ -124,19 +130,28 @@ cyclicDescent(sim, plots = TRUE)
 
 ### Ajuste del modelo final por regresión lineal múltiple
 
-Una vez encontrados lo periodos significativos, se procede al ajuste del
-modelo final, donde se hace la estimación de los parámetros a y b de
-cada armónico, y en su caso de la tendencia lineal, al mismo tiempo.
-Este modelo corresponde a la llamada regresión periódica y se ajusta por
-regresión lineal múltiple con la función `lm()`, en este caso modificada
-para ajustar el modelo:
+Una vez encontrados los periodos significativos, se procede al ajuste
+del modelo final, donde se hace la estimación de los parámetros $a_i$ y
+$b_i$ de cada armónico, y en su caso de la tendencia lineal
+($\alpha + \beta t$):
 
 $$ X_e = \alpha + \beta t + \sum_{i=1}^m \bigg(a_i \cdot cos(2\pi p_i^{-1}t) + b_i \cdot sin(2\pi p_i^{-1}t) \bigg) $$
 
+Este modelo corresponde a la llamada regresión periódica y se ajusta por
+regresión lineal múltiple con la función `lm()`, que requiere que se le
+pase la fórmula a ajustar de manera explícita, por ejemplo, para dos
+armónicos y con tendencia lineal:
+
+``` r
+lm(x ~ t + cos(2*pi/25*t) + sin(2*pi/25*t) + cos(2*pi/10*t) + sin(2*pi/10*t))
+```
+
+Aunque la construcción de la fórmula del modelo no es difícil, la
+función `lm.harmonics()` lo hace de manera automática.
+
 ``` r
 op <- sim.cd$harmonics$Period[1:4] # solo interesan los primeros 4 periodos 
-sim.fit <- lm.harmonics(x = sim, periods = op, trend = FALSE)
-sim.fit
+lm.harmonics(x = sim, periods = op, trend = TRUE)
 ```
 
 
@@ -144,63 +159,33 @@ sim.fit
     lm(formula = modl, data = datdf)
 
     Coefficients:
-    cos(2 * pi/25 * t)  sin(2 * pi/25 * t)  cos(2 * pi/10 * t)  sin(2 * pi/10 * t)  
-              -17.1753             36.5393              7.0845            -19.1224  
-    cos(2 * pi/16 * t)  sin(2 * pi/16 * t)  cos(2 * pi/75 * t)  sin(2 * pi/75 * t)  
-                5.4185              8.2432              3.9721             -0.4508  
+           (Intercept)                   t  cos(2 * pi/25 * t)  sin(2 * pi/25 * t)  
+             -0.427925           -0.001638          -17.205192           36.543602  
+    cos(2 * pi/10 * t)  sin(2 * pi/10 * t)  cos(2 * pi/16 * t)  sin(2 * pi/16 * t)  
+              7.086595          -19.126601            5.397019            8.250565  
+    cos(2 * pi/75 * t)  sin(2 * pi/75 * t)  
+              3.936108           -0.483488  
 
-`sim.fit` es un objeto de clase `lm`, que preferimos mantener para
-aprovechar toda la maquinaria desarrollada en R para modelos lineales.
-Por ejemplo, podemos revisar la tabla de regresión resultante
-
-``` r
-summary(sim.fit)
-```
-
-
-    Call:
-    lm(formula = modl, data = datdf)
-
-    Residuals:
-        Min      1Q  Median      3Q     Max 
-    -22.210  -7.348  -1.155   5.491  26.427 
-
-    Coefficients:
-                       Estimate Std. Error t value Pr(>|t|)    
-    cos(2 * pi/25 * t) -17.1753     0.9170 -18.729  < 2e-16 ***
-    sin(2 * pi/25 * t)  36.5393     0.9080  40.242  < 2e-16 ***
-    cos(2 * pi/10 * t)   7.0845     0.9120   7.768 3.37e-13 ***
-    sin(2 * pi/10 * t) -19.1224     0.9124 -20.959  < 2e-16 ***
-    cos(2 * pi/16 * t)   5.4185     0.9147   5.924 1.26e-08 ***
-    sin(2 * pi/16 * t)   8.2432     0.9103   9.055  < 2e-16 ***
-    cos(2 * pi/75 * t)   3.9721     0.9227   4.305 2.55e-05 ***
-    sin(2 * pi/75 * t)  -0.4508     0.9024  -0.500    0.618    
-    ---
-    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-    Residual standard error: 9.562 on 212 degrees of freedom
-    Multiple R-squared:  0.9236,    Adjusted R-squared:  0.9207 
-    F-statistic: 320.4 on 8 and 212 DF,  p-value: < 2.2e-16
-
-En lugar de la función `lm.harmonics` se recomienda usar la siguiente
-sintaxis que es más transparente sobre lo que se está haciendo. Con
-`periodicRegModel()` se genera el modelo que se va a pasar a `lm()` para
-el ajuste final, preparandose también la tabla de datos.
+En lugar de la función `lm.harmonics` se recomienda usar la función
+`periodicRegModel()`, que es más transparente sobre lo que se está
+haciendo, que es construir la fórmula del modelo y preparar la tabla de
+datos para el ajuste, lo que puede incluir generar el vector de tiempo
+si es que no se proporcionó y centrar la serie de tiempo a media cero.
 
 ``` r
 perReg <- periodicRegModel(x = sim, periods = op, center.x = FALSE)
-# este es modelo que será ajustado
+# este es el modelo que será ajustado
 perReg$model
 ```
 
     x ~ 0 + cos(2 * pi/25 * t) + sin(2 * pi/25 * t) + cos(2 * pi/10 * 
         t) + sin(2 * pi/10 * t) + cos(2 * pi/16 * t) + sin(2 * pi/16 * 
         t) + cos(2 * pi/75 * t) + sin(2 * pi/75 * t)
-    <environment: 0x0000019260fb5748>
+    <environment: 0x000001cb4a4f5910>
 
 ``` r
-# y la tabla con la serie de tiempo ya preparada (p. ej. centrada a media cero) y el vector de tiempo
-head(perReg$data)
+# ... y la tabla de datos
+head(perReg$data) 
 ```
 
       t          x
@@ -211,8 +196,7 @@ head(perReg$data)
     5 5 37.3203249
     6 6 40.2108500
 
-Una vez preparado el modelo, el ajuste que se hace automáticamente con
-`lm.harmonics()`, quedaría de la siguiente manera
+Una vez preparado el modelo, el ajuste se haría de la siguiente manera:
 
 ``` r
 fit <- lm(perReg$model, data = perReg$data)
@@ -244,48 +228,33 @@ summary(fit)
     Multiple R-squared:  0.9236,    Adjusted R-squared:  0.9208 
     F-statistic: 320.6 on 8 and 212 DF,  p-value: < 2.2e-16
 
-A partir de a<sub>i</sub> y b<sub>i</sub> podemos calcular las
-amplitudes y fases correspondientes a través de la función
-`makeHarmonics()`.
+La salida de `lm()` es un objeto de la clase correspondiente que puede
+aprovechar todas las funciones de R para modelos lineales, por ejemplo
+extraer el AIC (`AIC(fit)`), obtener las gráficas diagnósticas
+(`plot(fit)`).
+
+La figura del modelo final se puede mediante el siguiente código:
+
+`{r} # Plot final plot_periodicReg(fit)}`
+
+Por último, a partir de los coeficientes a<sub>i</sub> y b<sub>i</sub>
+obtenidos con `lm()` podemos calcular las amplitudes y fases
+correspondientes a través de la función `harmonics()`.
 
 ``` r
 # generar armónicos
-harmonics <- makeHarmonics(sim.fit)
-harmonics
+harmonics(fit)
 ```
 
     $cyclic_components
       Period Amplitude      Phase       Lag
-    1     25 40.374632  2.0101986  7.998326
-    2     10 20.392552 -1.2159934 -1.935314
-    3     16  9.864595  0.9892816  2.519185
-    4     75  3.997617 -0.1129975 -1.348808
+    1     25 40.422479  2.0110591  8.001750
+    2     10 20.392612 -1.2159209 -1.935198
+    3     16  9.865049  0.9939467  2.531065
+    4     75  3.934823 -0.1121260 -1.338406
 
-La figura del modelo final se puede mediante el siguiente código:
-
-``` r
-# Plot final
-R2 <- as.numeric(formatC(summary(sim.fit)$r.squared, digits=3))
-stat <- summary(sim.fit)$fstatistic
-pval <- pf(stat[1], stat[2], stat[3], lower.tail = FALSE)
-pval <- format.pval(pval, digits = max(3, getOption("digits") - 3))
-
-main.t <- paste("Periods =", paste(formatC(op, digits=3), collapse=", "))
-sub.t <- substitute(paste(R^2, " = ", R2, " ; ", "p-value: ", pval), 
-                    list( R2 = R2, pval = pval ))
-
-par(mfrow = c(1, 1))
-plot(sim, type = "n", main = main.t)
-grid()
-lines(sim, type = "b", col = "grey30")
-lines(fitted(sim.fit), col = "blue")
-mtext(sub.t, side = 3)
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
-
-Mayores detalles del método se pueden revisar en la publicación de
-González-Rodríguez et al. (2015).
+Mayores detalles del método se pueden consultar en González-Rodríguez et
+al. (2015).
 
 **Referencias**
 

@@ -24,12 +24,19 @@
 #' perReg <- periodicRegModel(x = sim, periods = p, center.x = FALSE)
 #' plot(perReg)
 #'
-plot_periodicReg <- function(fit.lm) {
+plot_periodicReg <- function(fit.lm, t = NULL) {
   if (class(fit.lm) != "lm")
     stop ("object must be of class lm")
-  t <- fit.lm$model$t
   x <- fit.lm$model$x
   x.hat <- fit.lm$fitted.values
+  
+  if(missing(t)) {
+    t <- fit.lm$model$t
+  }
+  if(is.null(t)) {
+    t <- 1:length(x)
+  }
+  
   R2 <- as.numeric(formatC(summary(fit.lm)$r.squared, digits=3))
   stat <- summary(fit.lm)$fstatistic
   pval <- pf(stat[1], stat[2], stat[3], lower.tail = FALSE)

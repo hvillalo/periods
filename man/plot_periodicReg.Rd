@@ -4,7 +4,7 @@
 \alias{plot_periodicReg}
 \title{Plot a Periodic Regression Model}
 \usage{
-plot_periodicReg(fit.lm)
+plot_periodicReg(fit.lm, t = NULL)
 }
 \arguments{
 \item{fit.lm}{}
