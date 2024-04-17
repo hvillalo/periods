@@ -181,7 +181,7 @@ perReg$model
     x ~ 0 + cos(2 * pi/25 * t) + sin(2 * pi/25 * t) + cos(2 * pi/10 * 
         t) + sin(2 * pi/10 * t) + cos(2 * pi/16 * t) + sin(2 * pi/16 * 
         t) + cos(2 * pi/75 * t) + sin(2 * pi/75 * t)
-    <environment: 0x000001891ccd4a18>
+    <environment: 0x000001a868ca6bd8>
 
 ``` r
 # ... y la tabla de datos
@@ -359,8 +359,9 @@ plot_periodicReg(fit, ylab = "número de manchas solares")
 ![](README_files/figure-commonmark/unnamed-chunk-16-1.png)
 
 Como puede verse en el gráfico, los valores del número de manchas
-solares tienen media cero debido al ajuste, además no se muestra el
-tiempo en años porque en la matriz del modelo no se incluyó la tendencia
+solares tienen media cero debido al ajuste. Si no se hubiera usado
+`trend = TRUE`, tampoco se mostraría el tiempo en años porque en la
+matriz del modelo no estaría incluido el término para la tendencia
 lineal. Sin embargo, la gráfica correcta se puede generar de manera muy
 sencilla:
 

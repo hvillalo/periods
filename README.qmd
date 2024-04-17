@@ -154,7 +154,7 @@ harmonics(fit)
 plot_periodicReg(fit, ylab = "número de manchas solares")
 ```
 
-Como puede verse en el gráfico, los valores del número de manchas solares tienen media cero debido al ajuste, además no se muestra el tiempo en años porque en la matriz del modelo no se incluyó la tendencia lineal. Sin embargo, la gráfica correcta se puede generar de manera muy sencilla:
+Como puede verse en el gráfico, los valores del número de manchas solares tienen media cero debido al ajuste. Si no se hubiera usado `trend = TRUE`, tampoco se mostraría el tiempo en años porque en la matriz del modelo no estaría incluido el término para la tendencia lineal. Sin embargo, la gráfica correcta se puede generar de manera muy sencilla:
 
 ```{r}
 plot(sunspots, type = "b", col = "grey50", ylim = c(-20, 200))
