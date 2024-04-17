@@ -14,7 +14,7 @@ manera habitual en caso de no estar ya disponible.
 install.packages("devtools") # si no está instalado
 
 library(devtools)
-install_github("hvillalo/periods") #instalación de 'periods' desde github
+install_github("hvillalo/periods") # instalación de 'periods' desde github
 ```
 
 ## Ejemplo de uso
@@ -181,7 +181,7 @@ perReg$model
     x ~ 0 + cos(2 * pi/25 * t) + sin(2 * pi/25 * t) + cos(2 * pi/10 * 
         t) + sin(2 * pi/10 * t) + cos(2 * pi/16 * t) + sin(2 * pi/16 * 
         t) + cos(2 * pi/75 * t) + sin(2 * pi/75 * t)
-    <environment: 0x000001cb4a4f5910>
+    <environment: 0x0000018c7be0c8b8>
 
 ``` r
 # ... y la tabla de datos
@@ -200,6 +200,15 @@ Una vez preparado el modelo, el ajuste se haría de la siguiente manera:
 
 ``` r
 fit <- lm(perReg$model, data = perReg$data)
+```
+
+La salida de `lm()` es un objeto de la clase del mismo nombre que puede
+aprovechar todas las funciones de R para modelos lineales, por ejemplo
+extraer el AIC (`AIC(fit)`), obtener las gráficas diagnósticas
+(`plot(fit)`). Aquí ejemplificamos la obtención de la tabla de la
+regresión:
+
+``` r
 summary(fit)
 ```
 
@@ -228,14 +237,14 @@ summary(fit)
     Multiple R-squared:  0.9236,    Adjusted R-squared:  0.9208 
     F-statistic: 320.6 on 8 and 212 DF,  p-value: < 2.2e-16
 
-La salida de `lm()` es un objeto de la clase correspondiente que puede
-aprovechar todas las funciones de R para modelos lineales, por ejemplo
-extraer el AIC (`AIC(fit)`), obtener las gráficas diagnósticas
-(`plot(fit)`).
+La figura del modelo final se puede generar mediante la función
+`plot_periodicReg()`:
 
-La figura del modelo final se puede mediante el siguiente código:
+``` r
+plot_periodicReg(fit)
+```
 
-`{r} # Plot final plot_periodicReg(fit)}`
+![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
 
 Por último, a partir de los coeficientes a<sub>i</sub> y b<sub>i</sub>
 obtenidos con `lm()` podemos calcular las amplitudes y fases

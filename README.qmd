@@ -15,7 +15,7 @@ El paquete **periods** es la implementación en R del método presentado en @Gon
 install.packages("devtools") # si no está instalado
 
 library(devtools)
-install_github("hvillalo/periods") #instalación de 'periods' desde github
+install_github("hvillalo/periods") # instalación de 'periods' desde github
 ```
 
 ## Ejemplo de uso
@@ -97,14 +97,18 @@ Una vez preparado el modelo, el ajuste se haría de la siguiente manera:
 
 ```{r}
 fit <- lm(perReg$model, data = perReg$data)
+```
+
+La salida de `lm()` es un objeto de la clase del mismo nombre que puede aprovechar todas las funciones de R para modelos lineales, por ejemplo extraer el AIC (`AIC(fit)`), obtener las gráficas diagnósticas (`plot(fit)`). Aquí ejemplificamos la obtención de la tabla de la regresión:
+
+```{r}
 summary(fit)
 ```
 
-La salida de `lm()` es un objeto de la clase correspondiente que puede aprovechar todas las funciones de R para modelos lineales, por ejemplo extraer el AIC (`AIC(fit)`), obtener las gráficas diagnósticas (`plot(fit)`).
+La figura del modelo final se puede generar mediante la función `plot_periodicReg()`:
 
-La figura del modelo final se puede mediante el siguiente código:
-
-```{r} # Plot final plot_periodicReg(fit)}
+```{r}
+plot_periodicReg(fit)
 ```
 
 Por último, a partir de los coeficientes a~i~ y b~i~ obtenidos con `lm()` podemos calcular las amplitudes y fases correspondientes a través de la función `harmonics()`.
