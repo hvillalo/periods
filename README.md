@@ -17,7 +17,7 @@ library(devtools)
 install_github("hvillalo/periods") # instalación de 'periods' desde github
 ```
 
-## Ejemplo de uso
+## Ejemplos de uso
 
 ### Serie simulada
 
@@ -181,7 +181,7 @@ perReg$model
     x ~ 0 + cos(2 * pi/25 * t) + sin(2 * pi/25 * t) + cos(2 * pi/10 * 
         t) + sin(2 * pi/10 * t) + cos(2 * pi/16 * t) + sin(2 * pi/16 * 
         t) + cos(2 * pi/75 * t) + sin(2 * pi/75 * t)
-    <environment: 0x0000018c7be0c8b8>
+    <environment: 0x0000018acfa518d8>
 
 ``` r
 # ... y la tabla de datos
@@ -261,6 +261,93 @@ harmonics(fit)
     2     10 20.392612 -1.2159209 -1.935198
     3     16  9.865049  0.9939467  2.531065
     4     75  3.934823 -0.1121260 -1.338406
+
+### Manchas solares
+
+Los datos de manchas solares por año usados en la publicación también se
+incluyen en el paquete
+
+``` r
+data(sunspots)
+```
+
+#### Descenso cíclico
+
+En este caso, es conveniente centrar la serie a media cero para
+facilitar el ajuste. Para ello se utiliza el argumento
+`center.x = TRUE`. Aunque este es su valor por defecto, lo incluimos
+para no olvidarlo en los pasos siguientes.
+
+``` r
+dc <- cyclicDescent(x = sunspots$number, t = sunspots$year, center.x = TRUE)
+dc
+```
+
+    $harmonics
+               Period Amplitude       Phase          Lag      RSS      R.sq
+    Model 1 :      11 30.152431  0.34382263   0.60193178 365500.1 0.2795383
+    Model 2 :      10 21.187340 -0.79193237  -1.26039951 295688.5 0.4171487
+    Model 3 :     103 16.731692  0.58526677   9.59425426 251786.2 0.5036874
+    Model 4 :      12 12.036872 -0.02045528  -0.03906671 229184.0 0.5482402
+    Model 5 :      53 11.665665 -2.12381823 -17.91485694 207826.9 0.5903386
+    Model 6 :     153  9.677547 -1.07924838 -26.28046027 193443.4 0.6186909
+    Model 7 :      66  7.975574  0.33860034   3.55673459 183762.4 0.6377737
+    Model 8 :      13  7.058581 -1.56061205  -3.22892858 175989.9 0.6530946
+    Model 9 :      43  6.079787  2.85416899  19.53296944 170323.2 0.6642646
+    Model 10 :     28  5.558053 -1.73077723  -7.71292903 165457.6 0.6738555
+    Model 11 :     14  5.009580 -0.54493707  -1.21421199 161541.8 0.6815743
+    Model 12 :     21  4.441830  1.08739385   3.63434625 158446.2 0.6876761
+
+    $Stats
+                             F dfn dfd   p.value
+    Models 1 & 2 :   36.241134   2 307 7.410e-15
+    Models 2 & 3 :   26.590388   2 305 2.265e-11
+    Models 3 & 4 :   14.941020   2 303 6.480e-07
+    Models 4 & 5 :   15.465992   2 301 4.040e-07
+    Models 5 & 6 :   11.116085   2 299 2.205e-05
+    Models 6 & 7 :    7.823287   2 297 0.0004885
+    Models 7 & 8 :    6.514239   2 295 0.0017045
+    Models 8 & 9 :    4.874100   2 293 0.0082729
+    Models 9 & 10 :   4.278682   2 291 0.0147431
+    Models 10 & 11 :  3.502763   2 289 0.0313989
+    Models 11 & 12 :  2.803545   2 287 0.0622554
+
+    attr(,"class")
+    [1] "periods"
+
+#### Regresión periódica
+
+Al construir el modelo final, es importante hacerlo tal cual se hizo la
+búsqueda de periodos en el descenso cíclico, es decir considerando si se
+centró la serie y si se consideró tendencia.
+
+``` r
+p <- dc$harmonics$Period[1:10]
+rp <- periodicRegModel(x = sunspots$number, t = sunspots$year, periods = p, 
+                       center.x = TRUE)
+fit <- lm(rp$model, data = rp$data)
+```
+
+#### Figura final
+
+``` r
+plot_periodicReg(fit, ylab = "número de manchas solares")
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-16-1.png)
+
+Como puede verse en el gráfico, los valores del número de manchas
+solares tienen media cero debido al ajuste, además no se muestra el
+tiempo en años porque en la matriz del modelo no se incluyó la tendencia
+lineal. Sin embargo, la gráfica correcta se puede generar de manera muy
+sencilla:
+
+``` r
+plot(sunspots, type = "b", col = "grey50", ylim = c(-20, 200))
+lines(sunspots$year, fitted(fit) + mean(sunspots$number), col = "black", lwd = 2)
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-17-1.png)
 
 Mayores detalles del método se pueden consultar en González-Rodríguez et
 al. (2015).

@@ -18,7 +18,7 @@ library(devtools)
 install_github("hvillalo/periods") # instalación de 'periods' desde github
 ```
 
-## Ejemplo de uso
+## Ejemplos de uso
 
 ### Serie simulada
 
@@ -116,6 +116,47 @@ Por último, a partir de los coeficientes a~i~ y b~i~ obtenidos con `lm()` podem
 ```{r}
 # generar armónicos
 harmonics(fit)
+```
+
+### Manchas solares
+
+Los datos de manchas solares por año usados en la publicación también se incluyen en el paquete
+
+```{r}
+data(sunspots)
+```
+
+#### Descenso cíclico
+
+En este caso, es conveniente centrar la serie a media cero para facilitar el ajuste. Para ello se utiliza el argumento `center.x = TRUE`. Aunque este es su valor por defecto, lo incluimos para no olvidarlo en los pasos siguientes.
+
+```{r}
+dc <- cyclicDescent(x = sunspots$number, t = sunspots$year, center.x = TRUE)
+dc
+```
+
+#### Regresión periódica
+
+Al construir el modelo final, es importante hacerlo tal cual se hizo la búsqueda de periodos en el descenso cíclico, es decir considerando si se centró la serie y si se consideró tendencia.
+
+```{r}
+p <- dc$harmonics$Period[1:10]
+rp <- periodicRegModel(x = sunspots$number, t = sunspots$year, periods = p, 
+                       center.x = TRUE)
+fit <- lm(rp$model, data = rp$data)
+```
+
+#### Figura final
+
+```{r}
+plot_periodicReg(fit, ylab = "número de manchas solares")
+```
+
+Como puede verse en el gráfico, los valores del número de manchas solares tienen media cero debido al ajuste, además no se muestra el tiempo en años porque en la matriz del modelo no se incluyó la tendencia lineal. Sin embargo, la gráfica correcta se puede generar de manera muy sencilla:
+
+```{r}
+plot(sunspots, type = "b", col = "grey50", ylim = c(-20, 200))
+lines(sunspots$year, fitted(fit) + mean(sunspots$number), col = "black", lwd = 2)
 ```
 
 Mayores detalles del método se pueden consultar en @GonzalezRodriguez2015.

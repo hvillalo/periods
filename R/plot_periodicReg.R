@@ -24,7 +24,8 @@
 #' perReg <- periodicRegModel(x = sim, periods = p, center.x = FALSE)
 #' plot(perReg)
 #'
-plot_periodicReg <- function(fit.lm, t = NULL) {
+plot_periodicReg <- 
+ function(fit.lm, t = NULL, col.x = "grey30", col.xhat = "blue", ...) {
   if (class(fit.lm) != "lm")
     stop ("object must be of class lm")
   x <- fit.lm$model$x
@@ -46,9 +47,9 @@ plot_periodicReg <- function(fit.lm, t = NULL) {
   sub.t <- substitute(paste(R^2, " = ", R2, " ; ", "p-value: ", pval), 
                       list( R2 = R2, pval = pval ))
   
-  plot(t, x, type = "n", main = main.t)
+  plot(t, x, type = "n", main = main.t, ...)
   grid()
-  lines(t, x, type = "b", col = "grey30")
-  lines(x.hat, col = "blue")
+  lines(t, x, type = "b", col = col.x)
+  lines(t, x.hat, col = col.xhat)
   mtext(sub.t, side = 3)
 }

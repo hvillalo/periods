@@ -5,6 +5,8 @@
 #' @param x Vector of values to be analyzed.
 #'
 #' @param t Vector of time (optional). If specified, it has to have the same length as \code{x} and must be monotonically increasing. 
+#'
+#' @param center.x Logical. If \code{TRUE}, the vector x is centered to mean zero.
 #'  
 #' @param trend Logical. If \code{TRUE}, the linear tendency is calculated and subtracted from the data.
 #' 
@@ -44,9 +46,9 @@
 #' sim.cd
 #' 
 cyclicDescent <- 
-  function(x, t=NULL, trend=FALSE, ip=NULL, lp=NULL, step=NULL, hn=NULL,
-           neig=0, exclude=NULL, alpha=0.05, rrss=FALSE, 
-           plots=FALSE)
+  function(x, t = NULL, center.x = TRUE, trend = FALSE, ip = NULL, lp = NULL,
+           step = NULL, hn = NULL, neig = 0, exclude = NULL, alpha = 0.05, 
+		   rrss = FALSE, plots = FALSE)
   {
     n <- length(x)                          # length of data series
     if (missing(t)){ 
@@ -68,10 +70,15 @@ cyclicDescent <-
 	}
     if (missing(step))  
       step <- t.unit                        # step between test periods
-    x.mean <- mean(x)                   
-    xd <- x - x.mean                        # center data
-    datdf <- data.frame(t=t, x=xd)
-    # Removing Linear Trend
+    
+	# Center data
+	if(center.x == TRUE){
+	  x.mean <- mean(x)                    
+      xd <- x - x.mean
+    } else {
+      xd <- x
+    }	  
+    # Remove linear trend
     if (trend == TRUE){ 
       xlt <- lm(xd ~ t)$fitted.values       # linear fit
       xd <- xd - xlt                        # detrended data
@@ -80,11 +87,10 @@ cyclicDescent <-
     # Periodic Regression function
     periodicRegression <- function(x, t, perio, cos.ot, sin.ot) {
       np <- length(perio)                   # number of periods to test
-      vna <-rep(NA, np) 
-      modp.pr <- data.frame(a1=vna, b1=vna, period=perio, rrss=vna)
-      resi <- matrix(NA, nrow=length(x), ncol=np)
-      for (i in 1:np) {
-        mreg <- lm( x ~ 0 + cos.ot[, i] + sin.ot[, i] )
+      modp.pr <- data.frame(a1 = NA, b1 = NA, period = perio, rrss = NA)
+      resi <- matrix(NA, nrow = length(x), ncol = np)
+      for(i in 1:np) {
+        mreg <- lm(x ~ 0 + cos.ot[, i] + sin.ot[, i])
         modp.pr[i, 1:2] <- coef(mreg)
         resi[, i] <- residuals(mreg)
       }
@@ -94,27 +100,28 @@ cyclicDescent <-
     
     # Cyclic Descent plot function   
     plot.cd <- function(pnb) {
-      p1 <- as.numeric(formatC(harmonics[pnb, 'Period'], digits=3))
-      Rsq <- as.numeric(formatC(harmonics[pnb, 'R.sq'], digits=3))
+      p1 <- as.numeric(formatC(harmonics[pnb, 'Period'], digits = 3))
+      Rsq <- as.numeric(formatC(harmonics[pnb, 'R.sq'], digits = 3))
       if (pnb == 1){
         plev <- NA #; harmonics[pnb, 'p.value']
       } else {
         plev <- sta[pnb-1, 'p.value']
       }
-      plev <- format.pval(plev, digits=max(3, getOption("digits") - 3))
-      
+      plev <- format.pval(plev, digits = max(3, getOption("digits") - 3))
+      op <- par(no.readonly = TRUE)  
+      on.exit(par(op))
       par(mfrow = c(2, 1), mar = c(4, 4, 2, 2))
-      plot(resids[[pnb]], type="l", main=paste("op =", p1))
-      plot(t, xd, type="o", col="grey30", main=substitute(paste(R^2, " = ", 
-                    Rsq, " ; ", "p-value: ", plev), list(Rsq=Rsq, plev=plev)))
-      lines(t, xcum, col="blue")
+      plot(resids[[pnb]], type = "l", main = paste("op =", p1))
+      plot(t, xd, type = "o", col = "grey30", main = substitute(paste(R^2, " = ", 
+           Rsq, " ; ", "p-value: ", plev), list(Rsq = Rsq, plev = plev)))
+      lines(t, xcum, col = "blue")
     }
     
     # Tables for results
-    harmonics <- data.frame(a1=NA, b1=NA, Period=NA, MRRSS=NA, Amplitude=NA,
-                            Phase=NA, Lag=NA, RSS=NA, R.sq=NA, F=NA, dfn=NA, 
-                            dfd=NA, p.value=NA)
-    sta <- data.frame(F=NA, dfn=NA, dfd=NA, p.value=NA)
+    harmonics <- data.frame(a1 = NA, b1 = NA, Period = NA, MRRSS = NA, 
+	                Amplitude = NA, Phase = NA, Lag = NA, RSS = NA, 
+                    R.sq = NA, F = NA, dfn = NA, dfd = NA, p.value = NA)
+    sta <- data.frame(F = NA, dfn = NA, dfd = NA, p.value = NA)
     resids <- list()                        # rrss
     
     # First Model ***************************************************************
@@ -122,7 +129,7 @@ cyclicDescent <-
     xcum <- rep(0, n)                       # cumulated harmonic series
     per2eval <- seq(ip, lp, step)           # periods to evaluate
 
-    if ( !missing(exclude) ){
+    if (!missing(exclude)){
       per2eval <- per2eval[!per2eval %in% exclude]
     }
     k1 <- 2                                 # initial number of paramaters
@@ -132,7 +139,7 @@ cyclicDescent <-
     cos.ot <- cos(t %*% omega)
     sin.ot <- sin(t %*% omega)
     
-    rrss.pr <- periodicRegression(x=xd, t, perio=per2eval, cos.ot, sin.ot)  
+    rrss.pr <- periodicRegression(x = xd, t, perio = per2eval, cos.ot, sin.ot)  
     pars <- rrss.pr[which.max(rrss.pr[, 'rrss']), ]    # best fit model (MRRSS)
     harmonics[1, 1:4] <- pars[1:4]                     # save model coefs.
     a1 <- pars[1, 1]
@@ -245,7 +252,7 @@ cyclicDescent <-
           } else {              # when the condition above is not meet,
             nsh <- nn - 1
             nshm <- 0
-            nn <- cstop + 1       # the counter exceeds 'cstop' by one    
+            nn <- cstop + 1     # the counter exceeds 'cstop' by one    
           }
         }                       # and the loop stops                   
       } else {
@@ -256,27 +263,7 @@ cyclicDescent <-
       }
     }
 
-#    # Whole model plot 
-#     if (plots %in%  c("a", "all", "l", "last")) {
-#       R2 <- as.numeric(formatC(harmonics[nsh, 'R.sq'], digits=3))
-#       pval <- format.pval(harmonics[nsh, 'p.value'], digits=max(3, 
-#                           getOption("digits") - 3))
-#       xe <- xcum
-#       if ( exists("nshm") ) xe <- xcum - xcal
-#       xe <- xe + x.mean
-#       if ( trend == TRUE )  xe <- xe + xlt
-#       main.t <- paste("Periods =", paste(formatC(harmonics$Period[1:nsh],
-#                                                  digits=3), collapse=", "))
-#       sub.t <- substitute(paste(R^2, " = ", R2, " ; ", "p-value: ", pval), 
-#                           list( R2 = R2, pval = pval ))
-#       ylims <- c( min( c(x, xe) ), max( c(x, xe) ) )
-#       par( mfrow = c(1, 1) )
-#       plot( t, x, type="o", ylab="", xlab = "time", col = "grey30", 
-#             main = main.t, ylim = ylims ) 
-#       lines(t, xe, lwd = 2, col = "blue" )
-#       mtext(sub.t, side = 3)
-#     } 
-    
+   
     # Formating tables and calculating Amplitude, Phase and Lag
     sta$p.value <- 
       format.pval(sta$p.value, digits = max(3, getOption("digits") - 3))  
@@ -289,9 +276,9 @@ cyclicDescent <-
     harmonics <- harmonics[, -c(1, 2, 4, 10:13)]
     
     if (rrss == TRUE){  
-      CycD <- list(RRSS=resids, harmonics=harmonics, Stats=sta)
+      CycD <- list(RRSS = resids, harmonics = harmonics, Stats = sta)
     } else { 
-      CycD <- list(harmonics=harmonics, Stats=sta)
+      CycD <- list(harmonics = harmonics, Stats = sta)
     }
     attr(CycD, "class") <- "periods"
     return(CycD)
