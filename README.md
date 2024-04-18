@@ -147,32 +147,13 @@ lm(x ~ t + cos(2*pi/25*t) + sin(2*pi/25*t) + cos(2*pi/10*t) + sin(2*pi/10*t))
 ```
 
 Aunque la construcción de la fórmula del modelo no es difícil, la
-función `lm.harmonics()` lo hace de manera automática.
+función `periodicRegModel()` lo hace de manera automática y prepara
+además los datos en un *data frame* para el ajuste. Esto puede incluir
+generar el vector de tiempo si es que no se proporcionó o centrar la
+serie de tiempo a media cero.
 
 ``` r
-op <- sim.cd$harmonics$Period[1:4] # solo interesan los primeros 4 periodos 
-lm.harmonics(x = sim, periods = op, trend = TRUE)
-```
-
-
-    Call:
-    lm(formula = modl, data = datdf)
-
-    Coefficients:
-           (Intercept)                   t  cos(2 * pi/25 * t)  sin(2 * pi/25 * t)  
-             -0.427925           -0.001638          -17.205192           36.543602  
-    cos(2 * pi/10 * t)  sin(2 * pi/10 * t)  cos(2 * pi/16 * t)  sin(2 * pi/16 * t)  
-              7.086595          -19.126601            5.397019            8.250565  
-    cos(2 * pi/75 * t)  sin(2 * pi/75 * t)  
-              3.936108           -0.483488  
-
-En lugar de la función `lm.harmonics` se recomienda usar la función
-`periodicRegModel()`, que es más transparente sobre lo que se está
-haciendo, que es construir la fórmula del modelo y preparar la tabla de
-datos para el ajuste, lo que puede incluir generar el vector de tiempo
-si es que no se proporcionó y centrar la serie de tiempo a media cero.
-
-``` r
+op <- sim.cd$harmonics$Period[1:4] # solo interesan los primeros 4 periodos
 perReg <- periodicRegModel(x = sim, periods = op, center.x = FALSE)
 # este es el modelo que será ajustado
 perReg$model
@@ -181,7 +162,7 @@ perReg$model
     x ~ 0 + cos(2 * pi/25 * t) + sin(2 * pi/25 * t) + cos(2 * pi/10 * 
         t) + sin(2 * pi/10 * t) + cos(2 * pi/16 * t) + sin(2 * pi/16 * 
         t) + cos(2 * pi/75 * t) + sin(2 * pi/75 * t)
-    <environment: 0x0000014d0eed7bf8>
+    <environment: 0x0000022c46a5e8d0>
 
 ``` r
 # ... y la tabla de datos
@@ -196,7 +177,8 @@ head(perReg$data)
     5 5 37.3203249
     6 6 40.2108500
 
-Una vez preparado el modelo, el ajuste se haría de la siguiente manera:
+Una vez preparado el modelo, el ajuste se haría con la función `lm()` de
+la siguiente manera:
 
 ``` r
 fit <- lm(perReg$model, data = perReg$data)
@@ -204,9 +186,9 @@ fit <- lm(perReg$model, data = perReg$data)
 
 La salida de `lm()` es un objeto de la clase del mismo nombre que puede
 aprovechar todas las funciones de R para modelos lineales, por ejemplo
-extraer el AIC (`AIC(fit)`), obtener las gráficas diagnósticas
-(`plot(fit)`). Aquí ejemplificamos la obtención de la tabla de la
-regresión:
+calcular el Criterio de Información de Akaike (`AIC(fit)`), obtener las
+gráficas diagnósticas (`plot(fit)`). Aquí ejemplificamos la obtención de
+la tabla de la regresión:
 
 ``` r
 summary(fit)
@@ -244,7 +226,7 @@ La figura del modelo final se puede generar mediante la función
 plot_periodicReg(fit)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-10-1.png)
 
 Por último, a partir de los coeficientes a<sub>i</sub> y b<sub>i</sub>
 obtenidos con `lm()` podemos calcular las amplitudes y fases
@@ -277,7 +259,7 @@ En este caso, es conveniente centrar la serie a media cero para
 facilitar el ajuste. Para ello se utiliza el argumento
 `center.x = TRUE`. Aunque este es su valor por defecto, lo incluimos
 para no olvidarlo en los pasos siguientes. En el caso de la tendencia
-lineal, por defecto es `trend = FALSE`.
+lineal, su valor por defecto es `trend = FALSE`.
 
 ``` r
 dc <- cyclicDescent(x = sunspots$number, t = sunspots$year, 
@@ -329,7 +311,72 @@ centró la serie y si se consideró tendencia.
 p <- dc$harmonics$Period[1:10]
 rp <- periodicRegModel(x = sunspots$number, t = sunspots$year, periods = p, 
                        center.x = TRUE, trend = TRUE)
+```
+
+Como puede verse, el modelo incluye ahora intercepto y coeficiente para
+el vector de tiempo
+
+``` r
+rp$model
+```
+
+    x ~ t + cos(2 * pi/11 * t) + sin(2 * pi/11 * t) + cos(2 * pi/10 * 
+        t) + sin(2 * pi/10 * t) + cos(2 * pi/103 * t) + sin(2 * pi/103 * 
+        t) + cos(2 * pi/12 * t) + sin(2 * pi/12 * t) + cos(2 * pi/53 * 
+        t) + sin(2 * pi/53 * t) + cos(2 * pi/65 * t) + sin(2 * pi/65 * 
+        t) + cos(2 * pi/13 * t) + sin(2 * pi/13 * t) + cos(2 * pi/42 * 
+        t) + sin(2 * pi/42 * t) + cos(2 * pi/156 * t) + sin(2 * pi/156 * 
+        t) + cos(2 * pi/28 * t) + sin(2 * pi/28 * t)
+    <environment: 0x0000022c466c7fb0>
+
+El ajuste con `lm()` y los componentes armónicos quedarían de la
+siguiente manera
+
+``` r
 fit <- lm(rp$model, data = rp$data)
+summary(fit)
+```
+
+
+    Call:
+    lm(formula = rp$model, data = rp$data)
+
+    Residuals:
+        Min      1Q  Median      3Q     Max 
+    -57.857 -14.877  -1.339  15.254  72.955 
+
+    Coefficients:
+                          Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)         -111.72299   31.64547  -3.530 0.000482 ***
+    t                      0.05999    0.01704   3.520 0.000500 ***
+    cos(2 * pi/11 * t)    25.63960    1.88624  13.593  < 2e-16 ***
+    sin(2 * pi/11 * t)     9.51894    1.88413   5.052 7.74e-07 ***
+    cos(2 * pi/10 * t)    15.59843    1.86422   8.367 2.52e-15 ***
+    sin(2 * pi/10 * t)   -15.25330    1.87215  -8.147 1.12e-14 ***
+    cos(2 * pi/103 * t)   16.19015    1.89412   8.548 7.30e-16 ***
+    sin(2 * pi/103 * t)    6.94453    1.97180   3.522 0.000497 ***
+    cos(2 * pi/12 * t)    12.38559    1.87889   6.592 2.05e-10 ***
+    sin(2 * pi/12 * t)    -0.38823    1.87889  -0.207 0.836446    
+    cos(2 * pi/53 * t)    -7.29124    1.94501  -3.749 0.000215 ***
+    sin(2 * pi/53 * t)    -8.45481    1.90978  -4.427 1.35e-05 ***
+    cos(2 * pi/65 * t)    -9.56448    1.94631  -4.914 1.49e-06 ***
+    sin(2 * pi/65 * t)     2.16569    1.89866   1.141 0.254961    
+    cos(2 * pi/13 * t)     0.29864    1.86852   0.160 0.873129    
+    sin(2 * pi/13 * t)    -7.01440    1.86793  -3.755 0.000209 ***
+    cos(2 * pi/42 * t)    -6.66573    1.93157  -3.451 0.000642 ***
+    sin(2 * pi/42 * t)    -1.08391    1.95178  -0.555 0.579088    
+    cos(2 * pi/156 * t)   -7.16580    1.95039  -3.674 0.000284 ***
+    sin(2 * pi/156 * t)   -1.64598    1.98945  -0.827 0.408716    
+    cos(2 * pi/28 * t)    -0.65469    1.88795  -0.347 0.729014    
+    sin(2 * pi/28 * t)    -5.79627    1.86340  -3.111 0.002053 ** 
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 23.25 on 290 degrees of freedom
+    Multiple R-squared:  0.6909,    Adjusted R-squared:  0.6685 
+    F-statistic: 30.87 on 21 and 290 DF,  p-value: < 2.2e-16
+
+``` r
 harmonics(fit)
 ```
 
@@ -356,7 +403,7 @@ harmonics(fit)
 plot_periodicReg(fit, ylab = "número de manchas solares")
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-16-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-17-1.png)
 
 Como puede verse en el gráfico, los valores del número de manchas
 solares tienen media cero debido al ajuste. Si no se hubiera usado
@@ -370,7 +417,7 @@ plot(sunspots, type = "b", col = "grey50", ylim = c(-20, 200))
 lines(sunspots$year, fitted(fit) + mean(sunspots$number), col = "black", lwd = 2)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-17-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-18-1.png)
 
 Mayores detalles del método se pueden consultar en González-Rodríguez et
 al. (2015).
