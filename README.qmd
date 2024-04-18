@@ -1,0 +1,173 @@
+---
+title: "Extracción y modelación de periodicidades en series de tiempo regulares. El paquete 'periods'."
+format: 
+  gfm:
+    toc: false
+editor: visual
+bibliography: references.bib
+---
+
+## Instalación
+
+El paquete **periods** es la implementación en R del método presentado en @GonzalezRodriguez2015 (ver <http://dx.doi.org/10.4236/ojs.2015.56062>). Se puede instalar desde github con ayuda de **devtools**, el cual a su vez se instala de la manera habitual en caso de no estar ya disponible.
+
+```{r, eval=FALSE}
+install.packages("devtools") # si no está instalado
+
+library(devtools)
+install_github("hvillalo/periods") # instalación de 'periods' desde github
+```
+
+## Ejemplos de uso
+
+### Serie simulada
+
+El paquete incluye una serie de tiempo simulada (n = 220) con las siguientes características: media = 0, sin tendencia lineal y cuatro componentes armónicos definidos por los parámetros: periodos = 25, 10, 16, 73; amplitudes = 40, 20, 10, 5; y fases = 2, 5, 1, 0. Adicionalmente, la serie contiene un 10 % de ruido aleatorio.
+
+Una vez que el paquete ha sido activado, la serie simulada se puede cargar en memoria con la función `data()`.
+
+```{r}
+library(periods)
+
+# Serie simulada
+data(sim)
+
+# gráfica 
+plot(sim, type = "l")
+```
+
+**Búsqueda de periodicidades con descenso cíclico**
+
+El primer paso del análisis consiste en buscar los periodos dominantes en la serie de tiempo. De esto se encarga la función `cyclicDescent()`, a la que le basta con que se especifique el vector de la serie de tiempo a procesar.
+
+```{r}
+sim.cd <- cyclicDescent(x = sim)
+```
+
+El resultado es una lista con los componentes armónicos encontrados y las pruebas de significancia estadística del aumento de R^2^ entre modelos sucesivos.
+
+```{r}
+# componentes armónicos
+sim.cd$harmonics
+
+# estadísticos
+sim.cd$Stats
+```
+
+Como puede verse, el aumento en R^2^ al pasar del Modelo 4 (con cuatro componentes armónicos) al Modelo 5, no es significativo, por lo que este último se descarta.
+
+La función `cyclicDescent()` tiene muchos argumentos más, cuyo uso se puede consultar en la publicación mencionada o preferentemente en la ayuda del paquete (`?cyclicDescent`), ya que **existen algunas diferencias entre las implementaciones en Matlab y en R**.
+
+Un ejemplo de un argumento interesante es `plots = TRUE`, el cual produce los gráficos de cada modelo. Cabe mencionar que aparte del primer modelo que solo tiene un componente armónico, los subsiguientes corresponden a la suma de los componentes sucesivos. En el caso anterior, por ejemplo, el modelo 3 incluye los periodos `r sim.cd$harmonics[1:3, 'Period']` y sus correspondientes amplitudes y fases.
+
+```{r}
+cyclicDescent(sim, plots = TRUE)
+```
+
+### Ajuste del modelo final por regresión lineal múltiple
+
+Una vez encontrados los periodos significativos, se procede al ajuste del modelo final, donde se hace la estimación de los parámetros $a_i$ y $b_i$ de cada armónico, y en su caso de la tendencia lineal ($\alpha + \beta t$):
+
+$$ X_e = \alpha + \beta t + \sum_{i=1}^m \bigg(a_i \cdot cos(2\pi p_i^{-1}t) + b_i \cdot sin(2\pi p_i^{-1}t) \bigg) $$
+
+Este modelo corresponde a la llamada regresión periódica y se ajusta por regresión lineal múltiple con la función `lm()`, que requiere que se le pase la fórmula a ajustar de manera explícita, por ejemplo, para dos armónicos y con tendencia lineal:
+
+```{r, eval = FALSE}
+lm(x ~ t + cos(2*pi/25*t) + sin(2*pi/25*t) + cos(2*pi/10*t) + sin(2*pi/10*t))
+```
+
+Aunque la construcción de la fórmula del modelo no es difícil, la función `periodicRegModel()` lo hace de manera automática y prepara además los datos en un *data frame* para el ajuste. Esto puede incluir generar el vector de tiempo si es que no se proporcionó o centrar la serie de tiempo a media cero.
+
+```{r}
+op <- sim.cd$harmonics$Period[1:4] # solo interesan los primeros 4 periodos
+perReg <- periodicRegModel(x = sim, periods = op, center.x = FALSE)
+# este es el modelo que será ajustado
+perReg$model
+# ... y la tabla de datos
+head(perReg$data) 
+```
+
+Una vez preparado el modelo, el ajuste se haría con la función `lm()` de la siguiente manera:
+
+```{r}
+fit <- lm(perReg$model, data = perReg$data)
+```
+
+La salida de `lm()` es un objeto de la clase del mismo nombre que puede aprovechar todas las funciones de R para modelos lineales, por ejemplo calcular el Criterio de Información de Akaike (`AIC(fit)`), obtener las gráficas diagnósticas (`plot(fit)`). Aquí ejemplificamos la obtención de la tabla de la regresión:
+
+```{r}
+summary(fit)
+```
+
+La figura del modelo final se puede generar mediante la función `plot_periodicReg()`:
+
+```{r}
+plot_periodicReg(fit)
+```
+
+Por último, a partir de los coeficientes a~i~ y b~i~ obtenidos con `lm()` podemos calcular las amplitudes y fases correspondientes a través de la función `harmonics()`.
+
+```{r}
+# generar armónicos
+harmonics(fit)
+```
+
+### Manchas solares
+
+Los datos de manchas solares por año usados en la publicación también se incluyen en el paquete
+
+```{r}
+data(sunspots)
+```
+
+#### Descenso cíclico
+
+En este caso, es conveniente centrar la serie a media cero para facilitar el ajuste. Para ello se utiliza el argumento `center.x = TRUE`. Aunque este es su valor por defecto, lo incluimos para no olvidarlo en los pasos siguientes. En el caso de la tendencia lineal, su valor por defecto es `trend = FALSE`.
+
+```{r}
+dc <- cyclicDescent(x = sunspots$number, t = sunspots$year, 
+                    center.x = TRUE, trend = TRUE)
+dc
+```
+
+#### Regresión periódica
+
+Al construir el modelo final, es importante hacerlo tal cual se hizo la búsqueda de periodos en el descenso cíclico, es decir considerando si se centró la serie y si se consideró tendencia.
+
+```{r}
+p <- dc$harmonics$Period[1:10]
+rp <- periodicRegModel(x = sunspots$number, t = sunspots$year, periods = p, 
+                       center.x = TRUE, trend = TRUE)
+
+```
+
+Como puede verse, el modelo incluye ahora intercepto y coeficiente para el vector de tiempo
+
+```{r}
+rp$model
+```
+
+El ajuste con `lm()` y los componentes armónicos quedarían de la siguiente manera
+
+```{r}
+fit <- lm(rp$model, data = rp$data)
+summary(fit)
+harmonics(fit)
+```
+
+#### Figura final
+
+```{r}
+plot_periodicReg(fit, ylab = "número de manchas solares")
+```
+
+Como puede verse en el gráfico, los valores del número de manchas solares tienen media cero debido al ajuste. Si no se hubiera usado `trend = TRUE`, tampoco se mostraría el tiempo en años porque en la matriz del modelo no estaría incluido el término para la tendencia lineal. Sin embargo, la gráfica correcta se puede generar de manera muy sencilla:
+
+```{r}
+plot(sunspots, type = "b", col = "grey50", ylim = c(-20, 200))
+lines(sunspots$year, fitted(fit) + mean(sunspots$number), col = "black", lwd = 2)
+```
+
+Mayores detalles del método se pueden consultar en @GonzalezRodriguez2015.
+
+**Referencias**
