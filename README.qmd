@@ -135,7 +135,7 @@ dc
 Al construir el modelo final, es importante hacerlo tal cual se hizo la búsqueda de periodos en el descenso cíclico, es decir considerando si se centró la serie y si se consideró tendencia.
 
 ```{r}
-p <- dc$harmonics$Period[1:10]
+p <- dc$harmonics$Period[1:12]
 rp <- periodicRegModel(x = sunspots$number, t = sunspots$year, periods = p, 
                        center.x = TRUE, trend = TRUE)
 
