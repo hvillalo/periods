@@ -30,6 +30,8 @@ plot_periodicReg <-
     stop ("object must be of class lm")
   x <- fit.lm$model$x
   x.hat <- fit.lm$fitted.values
+  harmonics <- harmonics(fit.lm)
+  op <- harmonics$cyclic_components$Period
   
   if(missing(t)) {
     t <- fit.lm$model$t

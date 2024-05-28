@@ -162,7 +162,7 @@ perReg$model
     x ~ 0 + cos(2 * pi/25 * t) + sin(2 * pi/25 * t) + cos(2 * pi/10 * 
         t) + sin(2 * pi/10 * t) + cos(2 * pi/16 * t) + sin(2 * pi/16 * 
         t) + cos(2 * pi/75 * t) + sin(2 * pi/75 * t)
-    <environment: 0x0000022c46a5e8d0>
+    <environment: 0x0000020193f3c538>
 
 ``` r
 # ... y la tabla de datos
@@ -327,7 +327,7 @@ rp$model
         t) + cos(2 * pi/13 * t) + sin(2 * pi/13 * t) + cos(2 * pi/42 * 
         t) + sin(2 * pi/42 * t) + cos(2 * pi/156 * t) + sin(2 * pi/156 * 
         t) + cos(2 * pi/28 * t) + sin(2 * pi/28 * t)
-    <environment: 0x0000022c466c7fb0>
+    <environment: 0x0000020194f61320>
 
 El ajuste con `lm()` y los componentes armónicos quedarían de la
 siguiente manera
