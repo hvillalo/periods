@@ -73,6 +73,7 @@ $$ X_e = \alpha + \beta t + \sum_{i=1}^m \bigg(a_i \cdot cos(2\pi p_i^{-1}t) + b
 Este modelo corresponde a la llamada regresión periódica y se ajusta por regresión lineal múltiple con la función `lm()`, que requiere que se le pase la fórmula a ajustar de manera explícita, por ejemplo, para dos armónicos y con tendencia lineal:
 
 ```{r, eval = FALSE}
+# NO EJECUTAR
 lm(x ~ t + cos(2*pi/25*t) + sin(2*pi/25*t) + cos(2*pi/10*t) + sin(2*pi/10*t))
 ```
 
