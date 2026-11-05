@@ -1,6 +1,5 @@
-Extracción y modelación de periodicidades en series de tiempo regulares.
-El paquete ‘periods’.
-================
+# Extracción y modelación de periodicidades en series de tiempo regulares. El paquete ‘periods’.
+
 
 ## Instalación
 
@@ -14,7 +13,7 @@ manera habitual en caso de no estar ya disponible.
 install.packages("devtools") # si no está instalado
 
 library(devtools)
-install_github("hvillalo/periods") # instalación de 'periods' desde github
+pak::pak("hvillalo/periods") # instalación de 'periods' desde github
 ```
 
 ## Ejemplos de uso
@@ -163,7 +162,7 @@ perReg$model
     x ~ 0 + cos(2 * pi/25 * t) + sin(2 * pi/25 * t) + cos(2 * pi/10 * 
         t) + sin(2 * pi/10 * t) + cos(2 * pi/16 * t) + sin(2 * pi/16 * 
         t) + cos(2 * pi/75 * t) + sin(2 * pi/75 * t)
-    <environment: 0x0000019038f49688>
+    <environment: 0x00000250e619ad98>
 
 ``` r
 # ... y la tabla de datos
@@ -194,7 +193,6 @@ la tabla de la regresión:
 ``` r
 summary(fit)
 ```
-
 
     Call:
     lm(formula = perReg$model, data = perReg$data)
@@ -330,7 +328,7 @@ rp$model
         t) + cos(2 * pi/28 * t) + sin(2 * pi/28 * t) + cos(2 * pi/21 * 
         t) + sin(2 * pi/21 * t) + cos(2 * pi/14 * t) + sin(2 * pi/14 * 
         t)
-    <environment: 0x000001903a010fd0>
+    <environment: 0x00000250ef226350>
 
 El ajuste con `lm()` y los componentes armónicos quedarían de la
 siguiente manera
@@ -339,7 +337,6 @@ siguiente manera
 fit <- lm(rp$model, data = rp$data)
 summary(fit)
 ```
-
 
     Call:
     lm(formula = rp$model, data = rp$data)

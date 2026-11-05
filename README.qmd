@@ -15,7 +15,7 @@ El paquete **periods** es la implementación en R del método presentado en @Gon
 install.packages("devtools") # si no está instalado
 
 library(devtools)
-install_github("hvillalo/periods") # instalación de 'periods' desde github
+pak::pak("hvillalo/periods") # instalación de 'periods' desde github
 ```
 
 ## Ejemplos de uso
